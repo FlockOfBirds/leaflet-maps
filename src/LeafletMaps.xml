@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="com.mendix.widget.custom.leafletmaps.LeafletMaps" needsEntityContext="true" offlineCapable="true" xmlns="http://www.mendix.com/widget/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../xsd/widget.xsd">
+    <name>Leaflet Maps</name>
+    <description>Add different type of maps to your application, using LeafletJS</description>
+    <icon/>
+    <properties>
+        <property key="defaultCenterAddress" type="string" required="false">
+            <caption>Default center address</caption>
+            <category>General</category>
+            <description>Map center location when no locations are available. The address will be used to lookup the location. No lookup is done when 'Default center latitude' and 'Default center longitude' contains a valid coordinate</description>
+        </property>
+    </properties>
+</widget>
