@@ -1,6 +1,7 @@
 import { Component, createElement } from "react";
 import { LatLngLiteral, Map, marker, popup, tileLayer } from "leaflet";
 
+import { Location } from "./Utils/ContainerUtils";
 import { Marker } from "./Marker";
 
 export interface LeafletMapProps {
@@ -16,12 +17,7 @@ export interface LeafletMapProps {
 export interface LeafletMapState {
     alertMessage?: string;
     center: LatLngLiteral;
-    locations?: Location[];
-}
-
-export interface Location {
-    latitude?: string;
-    longitude?: string;
+    // locations?: Location[];
 }
 
 export type mapProviders = "Open street" | "Map box";
@@ -29,21 +25,19 @@ export type mapProviders = "Open street" | "Map box";
 export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     private leafletNode?: HTMLDivElement;
-    // private defaultCenterLocation: LatLngLiteral = { lat: 51.9107963, lng: 4.4789878 };
+    private defaultCenterLocation: LatLngLiteral = { lat: 51.9107963, lng: 4.4789878 };
 
     private map?: Map;
-    readonly state: LeafletMapState = {
-        center: {
-            lat: Number(this.props.defaultCenterLatitude),
-            lng: Number(this.props.defaultCenterLongitude)
-        },
-        locations: this.props.locations
+    state: LeafletMapState = {
+        center: { lat: 0, lng: 0 }
+        // locations: this.props.locations
     };
 
     constructor(props: LeafletMapProps) {
         super(props);
 
         this.renderLeafletMap = this.renderLeafletMap.bind(this);
+        this.setDefaultCenter = this.setDefaultCenter.bind(this);
     }
 
     render() {
@@ -55,13 +49,53 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     componentWillReceiveProps(newProps: LeafletMapProps) {
         if (newProps) {
-            this.renderLeafletMap(this.state.center, Number(newProps.zoomLevel));
+            this.setDefaultCenter(newProps);
         }
     }
 
     componentDidMount() {
         if (this.leafletNode) {
             this.map = new Map(this.leafletNode);
+        }
+    }
+
+    componentDidUpdate(prevProps: LeafletMapProps, prevState: LeafletMapState) {
+        if (prevState !== this.state && prevProps !== this.props) {
+            this.renderLeafletMap(this.state.center, Number(this.props.zoomLevel));
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.map) {
+            this.map.remove();
+        }
+    }
+
+    private setDefaultCenter(props: LeafletMapProps) {
+        if (props.locations && props.locations.length !== 0) {
+            this.getLocation(props);
+        } else if (props.defaultCenterLatitude && props.defaultCenterLongitude) {
+            this.setState({
+                center: {
+                    lat: Number(props.defaultCenterLatitude),
+                    lng: Number(props.defaultCenterLongitude)
+                }
+            });
+        } else {
+            this.setState({ center: this.defaultCenterLocation });
+        }
+    }
+
+    private getLocation(props: LeafletMapProps) {
+        if (props.locations) {
+            props.locations.map(location => {
+                this.setState({
+                    center: {
+                        lat: Number(location.latitude),
+                        lng: Number(location.longitude)
+                    }
+                });
+            });
         }
     }
 
@@ -86,7 +120,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             this.map.openPopup(
                 popup()
                 .setLatLng(coordinates)
-                .setPopupContent(content)
+                .setContent(content)
             );
         }
     }

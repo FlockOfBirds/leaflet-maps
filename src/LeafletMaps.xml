@@ -32,6 +32,23 @@
             <category>Data source</category>
             <description/>
         </property>
+        <property key="staticLocations" type="object" isList="true" required="false">
+            <caption>Static locations</caption>
+            <category>Data source</category>
+            <description/>
+            <properties>
+                <property key="latitude" type="string" required="false">
+                    <caption>Latitude</caption>
+                    <category>Location</category>
+                    <description/>
+                </property>
+                <property key="longitude" type="string" required="false">
+                    <caption>Longitude</caption>
+                    <category>Location</category>
+                    <description/>
+                </property>
+            </properties>
+        </property>
         <!-- Appearance -->
         <property key="mapProvider" type="enumeration" defaultValue="openStreet">
             <caption>Map Provider</caption>
