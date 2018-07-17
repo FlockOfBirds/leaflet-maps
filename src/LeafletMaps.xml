@@ -1,13 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget id="com.mendix.widget.custom.leafletmaps.LeafletMaps" needsEntityContext="true" offlineCapable="true" xmlns="http://www.mendix.com/widget/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../xsd/widget.xsd">
+<widget id="com.mendix.widget.custom.leafletmaps.LeafletMaps" needsEntityContext="true" offlineCapable="true"
+    xmlns="http://www.mendix.com/widget/1.0/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../xsd/widget.xsd">
     <name>Leaflet Maps</name>
     <description>Add different type of maps to your application, using LeafletJS</description>
     <icon/>
     <properties>
-        <property key="defaultCenterAddress" type="string" required="false">
-            <caption>Default center address</caption>
-            <category>General</category>
-            <description>Map center location when no locations are available. The address will be used to lookup the location. No lookup is done when 'Default center latitude' and 'Default center longitude' contains a valid coordinate</description>
+        <!-- Data source -->
+        <property key="dataSourceType" type="enumeration" defaultValue="XPath">
+            <caption>Data source</caption>
+            <category>Data source</category>
+            <description/>
+            <enumerationValues>
+                <enumerationValue key="XPath">Database</enumerationValue>
+                <enumerationValue key="microflow">Microflow</enumerationValue>
+                <enumerationValue key="static">Static</enumerationValue>
+            </enumerationValues>
+        </property>
+        <property key="urlTemplate" type="string" required="false">
+            <caption>URL template</caption>
+            <category>Data source</category>
+            <description/>
+        </property>
+        <property key="defaultCenterLatitude" type="string" required="false">
+            <caption>Default center latitude</caption>
+            <category>Data source</category>
+            <description/>
+        </property>
+        <property key="defaultCenterLongitude" type="string" required="false">
+            <caption>Default center longitude</caption>
+            <category>Data source</category>
+            <description/>
+        </property>
+        <!-- Appearance -->
+        <property key="mapProvider" type="enumeration" defaultValue="openStreet">
+            <caption>Map Provider</caption>
+            <category>Appearance</category>
+            <description/>
+            <enumerationValues>
+                <enumerationValue key="openStreet">Open street</enumerationValue>
+                <enumerationValue key="mapBox">Map box</enumerationValue>
+            </enumerationValues>
+        </property>
+        <property key="autoZoom" type="boolean" defaultValue="true">
+            <caption>Auto zoom</caption>
+            <category>Appearance</category>
+            <description>Initial best fit zoom based the available makers. It will overwrite the specified 'Zoom level'</description>
+        </property>
+        <property key="zoomLevel" type="integer" defaultValue="10">
+            <caption>Zoom level</caption>
+            <category>Appearance</category>
+            <description>1: World, 5: Landmass/continent, 10: City, 15: Streets, 20: Buildings</description>
+        </property>
+        <property key="widthUnit" type="enumeration" defaultValue="percentage">
+            <caption>Width unit</caption>
+            <category>Appearance</category>
+            <description/>
+            <enumerationValues>
+                <enumerationValue key="percentage">Percentage</enumerationValue>
+                <enumerationValue key="pixels">Pixels</enumerationValue>
+            </enumerationValues>
+        </property>
+        <property key="width" type="integer" defaultValue="100">
+            <caption>Map width</caption>
+            <category>Appearance</category>
+            <description/>
+        </property>
+        <property key="heightUnit" type="enumeration" defaultValue="percentageOfWidth">
+            <caption>Height unit</caption>
+            <category>Appearance</category>
+            <description>'Percentage of width' is the aspect ratio, 'Pixels' is absolute. Warning: the 'Percentage of parent' only works when the parent has an absolute height, else it will not display</description>
+            <enumerationValues>
+                <enumerationValue key="percentageOfWidth">Percentage of width</enumerationValue>
+                <enumerationValue key="pixels">Pixels</enumerationValue>
+                <enumerationValue key="percentageOfParent">Percentage of parent</enumerationValue>
+            </enumerationValues>
+        </property>
+        <property key="height" type="integer" defaultValue="75">
+            <caption>Map height</caption>
+            <category>Appearance</category>
+            <description/>
+        </property>
+        <!-- Custom markers -->
+        <property key="defaultMakerIcon" type="image" required="false">
+            <caption>Default image</caption>
+            <category>Markers</category>
+            <description>Overwrite the default marker image of the widget</description>
         </property>
     </properties>
 </widget>

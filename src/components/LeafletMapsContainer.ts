@@ -1,42 +1,52 @@
 import { Component, createElement } from "react";
-import * as leaf from "leaflet";
+import { LeafletMap, mapProviders } from "./LeafletMap";
 
 import "leaflet/dist/leaflet.css";
+import "./ui/LeafletMaps.css";
 
-export interface LeafletMapsContainerProps {
+export interface WrapperProps {
     mxObject?: mendix.lib.MxObject;
+    style?: string;
 }
+
+export interface LeafletMapsContainerProps extends WrapperProps {
+    urlTemplate: string;
+    defaultCenterLatitude?: string;
+    defaultCenterLongitude?: string;
+    zoomLevel: string;
+    mapProvider: mapProviders;
+    dataSourceType: DataSource;
+    defaultMakerIcon: string;
+}
+
+type DataSource = "static" | "XPath" | "microflow";
 
 export interface LeafletMapsContainerState {
     alertMessage?: string;
 }
 
 export default class LeafletMapsContainer extends Component<LeafletMapsContainerProps, LeafletMapsContainerState> {
-    private leafletNode?: HTMLDivElement;
-
     readonly state: LeafletMapsContainerState = {
         alertMessage: ""
     };
 
+    constructor(props: LeafletMapsContainerProps) {
+        super(props);
+    }
+
     render() {
-        return createElement("div", { ref: this.getLeafletRef, style: { width: "800px", height: "500px" } });
+        return createElement(LeafletMap, {
+            urlTemplate: this.props.urlTemplate,
+            mapProvider: this.props.mapProvider,
+            defaultCenterLatitude: this.props.defaultCenterLatitude,
+            defaultCenterLongitude: this.props.defaultCenterLongitude,
+            zoomLevel: this.props.zoomLevel
+        });
     }
 
-    componentDidMount() {
-        if (this.leafletNode) {
-            this.setupLeafletMap();
-        }
-    }
-
-    private getLeafletRef = (node?: HTMLDivElement) => {
-        if (node) {
-            this.leafletNode = node;
-        }
-    }
-
-    private setupLeafletMap() {
-        if (this.leafletNode) {
-            leaf.map(this.leafletNode).setView([ 51.505, -0.09 ], 13);
+    componentWillReceiveProps(nextProps: LeafletMapsContainerProps) {
+        if (nextProps) {
+            //
         }
     }
 }
