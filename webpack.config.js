@@ -43,10 +43,8 @@ const widgetConfig = {
                 })
             },
             {
-                test: /\.(jpe?g|png|gif|svg)$/i,
-                loader: [
-                    "url-loader"
-                ]
+                test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
+                loader: "url-loader"
             }
         ]
     },

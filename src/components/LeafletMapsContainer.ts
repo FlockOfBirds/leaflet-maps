@@ -2,14 +2,17 @@ import { Component, createElement } from "react";
 import { LeafletMap, mapProviders } from "./LeafletMap";
 import merge from "deepmerge";
 
-import { DataSourceLocationProps, Location, parseStaticLocations } from "./Utils/ContainerUtils";
+import { DataSourceLocationProps, Location, Nanoflow, parseStaticLocations } from "./Utils/ContainerUtils";
 import { Alert } from "./Alert";
 import "leaflet/dist/leaflet.css";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css"; // Re-uses images from ~leaflet package
 import "./ui/LeafletMaps.css";
+import "leaflet-defaulticon-compatibility";
 
 export interface WrapperProps {
     "class"?: string;
     friendlyId: string;
+    mxform: mxui.lib.form._FormBase;
     mxObject?: mendix.lib.MxObject;
     style?: string;
 }
@@ -25,7 +28,7 @@ export interface LeafletMapsContainerProps extends WrapperProps {
     locations: DataSourceLocationProps[];
 }
 
-type DataSource = "static" | "XPath" | "microflow";
+type DataSource = "static" | "XPath" | "microflow" | "nanoflow";
 
 export interface LeafletMapsContainerState {
     alertMessage?: string;
@@ -106,7 +109,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         this.subscriptionHandles.map(mx.data.unsubscribe);
     }
 
-    private fetchData(contextObject?: mendix.lib.MxObject) {
+    private fetchData = (contextObject?: mendix.lib.MxObject) => {
         this.props.locations.map(locations => {
             if (this.props.dataSourceType === "static") {
                 this.setState({ locations: parseStaticLocations(this.props) });
@@ -115,6 +118,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             } else if (this.props.dataSourceType === "XPath") {
                 const guid = contextObject ? contextObject.getGuid() : "";
                 this.fetchLocationsByXpath(guid, locations.entityConstraint, locations.locationsEntity);
+            } else if (this.props.dataSourceType === "nanoflow") {
+                this.fetchLocationsByNanoflow(contextObject, locations.dataSourceNanoflow);
             }
         });
     }
@@ -157,7 +162,23 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         });
     }
 
-    private setLocationsFromMxObjects(mxObjects: mendix.lib.MxObject[]) {
+    private fetchLocationsByNanoflow = <T extends Nanoflow>(mxObject?: mendix.lib.MxObject, dataSourceNanoflow?: T) => {
+        const context = new mendix.lib.MxContext();
+        if (mxObject && dataSourceNanoflow && dataSourceNanoflow.nanoflow) {
+            mx.data.callNanoflow({
+                callback: this.setLocationsFromMxObjects,
+                nanoflow: dataSourceNanoflow,
+                origin: this.props.mxform,
+                context,
+                error: error =>
+                    this.setState({
+                        alertMessage: `An error occured while retrieving locations: ${error.message} in ` + dataSourceNanoflow
+                    })
+            });
+        }
+    }
+
+    private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[]) => {
         this.props.locations.map(locationAttr => {
             const locations = mxObjects.map(mxObject => {
                 const lat = mxObject.get(locationAttr.latitudeAttribute as string);

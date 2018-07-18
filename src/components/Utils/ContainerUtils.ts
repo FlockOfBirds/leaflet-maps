@@ -4,6 +4,7 @@ export interface DataSourceLocationProps extends StaticLocationProps, DatabaseLo
     locationsEntity?: string;
     entityConstraint?: string;
     dataSourceMicroflow?: string;
+    dataSourceNanoflow?: Nanoflow;
 }
 
 export interface DatabaseLocationProps {
@@ -14,6 +15,11 @@ export interface DatabaseLocationProps {
 export interface StaticLocationProps {
     staticLatitude: string;
     staticLongitude: string;
+}
+
+export interface Nanoflow {
+    nanoflow: object[];
+    paramsSpec: { Progress: string };
 }
 
 export interface Location {
