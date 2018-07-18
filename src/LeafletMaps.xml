@@ -17,6 +17,69 @@
                 <enumerationValue key="static">Static</enumerationValue>
             </enumerationValues>
         </property>
+        <property key="locations" type="object" isList="true" required="false">
+            <caption>locations</caption>
+            <category>Data source</category>
+            <description/>
+            <properties>
+                <property key="locationsEntity" type="entity" required="false">
+                    <caption>Locations entity</caption>
+                    <category>Database / Microflow</category>
+                    <description/>
+                </property>
+                <property key="entityConstraint" type="entityConstraint" entityProperty="locationsEntity" required="false">
+                    <caption>XPath constraint</caption>
+                    <category>Database / Microflow</category>
+                    <description>Constraint the 'Data source' 'Database' locations. It could be used with relation to '[%CurrentObject%]'</description>
+                </property>
+                <property key="latitudeAttribute" type="attribute" entityProperty="locationsEntity" required="false">
+                    <caption>Latitude attribute</caption>
+                    <category>Database / Microflow</category>
+                    <description/>
+                    <attributeTypes>
+                        <attributeType name="Decimal"/>
+                    </attributeTypes>
+                </property>
+                <property key="longitudeAttribute" type="attribute" entityProperty="locationsEntity" required="false">
+                    <caption>Longitude attribute  </caption>
+                    <category>Database / Microflow</category>
+                    <description/>
+                    <attributeTypes>
+                        <attributeType name="Decimal"/>
+                    </attributeTypes>
+                </property>
+                <property key="dataSourceMicroflow" type="microflow" required="false">
+                    <caption>Microflow</caption>
+                    <category>Database / Microflow</category>
+                    <description>The 'Datasource' 'Microflow' that returns the list of locations</description>
+                    <returnType type="Object" entityProperty="locationsEntity" isList="true"/>
+                </property>
+                <property key="staticLatitude" type="string" required="false">
+                    <caption>Latitude</caption>
+                    <category>Static</category>
+                    <description/>
+                </property>
+                <property key="staticLongitude" type="string" required="false">
+                    <caption>Longitude</caption>
+                    <category>Static</category>
+                    <description/>
+                </property>
+                <property key="icon" type="image" required="false">
+                    <caption>Marker image</caption>
+                    <category>Static</category>
+                    <description/>
+                </property>
+            </properties>
+        </property>
+        <property key="mapProvider" type="enumeration" defaultValue="openStreet">
+            <caption>Map Provider</caption>
+            <category>Data source</category>
+            <description/>
+            <enumerationValues>
+                <enumerationValue key="openStreet">Open street</enumerationValue>
+                <enumerationValue key="mapBox">Map box</enumerationValue>
+            </enumerationValues>
+        </property>
         <property key="urlTemplate" type="string" required="false">
             <caption>URL template</caption>
             <category>Data source</category>
@@ -32,32 +95,11 @@
             <category>Data source</category>
             <description/>
         </property>
-        <property key="staticLocations" type="object" isList="true" required="false">
-            <caption>Static locations</caption>
-            <category>Data source</category>
-            <description/>
-            <properties>
-                <property key="latitude" type="string" required="false">
-                    <caption>Latitude</caption>
-                    <category>Location</category>
-                    <description/>
-                </property>
-                <property key="longitude" type="string" required="false">
-                    <caption>Longitude</caption>
-                    <category>Location</category>
-                    <description/>
-                </property>
-            </properties>
-        </property>
         <!-- Appearance -->
-        <property key="mapProvider" type="enumeration" defaultValue="openStreet">
-            <caption>Map Provider</caption>
+        <property key="defaultMakerIcon" type="image" required="false">
+            <caption>Default image</caption>
             <category>Appearance</category>
-            <description/>
-            <enumerationValues>
-                <enumerationValue key="openStreet">Open street</enumerationValue>
-                <enumerationValue key="mapBox">Map box</enumerationValue>
-            </enumerationValues>
+            <description>Overwrite the default marker image of the widget</description>
         </property>
         <property key="autoZoom" type="boolean" defaultValue="true">
             <caption>Auto zoom</caption>
@@ -97,12 +139,6 @@
             <caption>Map height</caption>
             <category>Appearance</category>
             <description/>
-        </property>
-        <!-- Custom markers -->
-        <property key="defaultMakerIcon" type="image" required="false">
-            <caption>Default image</caption>
-            <category>Markers</category>
-            <description>Overwrite the default marker image of the widget</description>
         </property>
     </properties>
 </widget>

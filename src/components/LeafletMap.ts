@@ -1,5 +1,5 @@
 import { Component, createElement } from "react";
-import { LatLngLiteral, Map, marker, popup, tileLayer } from "leaflet";
+import { LatLngLiteral, Map, marker, tileLayer } from "leaflet";
 
 import { Location } from "./Utils/ContainerUtils";
 import { Marker } from "./Marker";
@@ -17,7 +17,6 @@ export interface LeafletMapProps {
 export interface LeafletMapState {
     alertMessage?: string;
     center: LatLngLiteral;
-    // locations?: Location[];
 }
 
 export type mapProviders = "Open street" | "Map box";
@@ -30,7 +29,6 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     private map?: Map;
     state: LeafletMapState = {
         center: { lat: 0, lng: 0 }
-        // locations: this.props.locations
     };
 
     constructor(props: LeafletMapProps) {
@@ -72,7 +70,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private setDefaultCenter(props: LeafletMapProps) {
-        if (props.locations && props.locations.length !== 0) {
+        if (props.locations && props.locations.length) {
             this.getLocation(props);
         } else if (props.defaultCenterLatitude && props.defaultCenterLongitude) {
             this.setState({
@@ -105,7 +103,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             this.map.setView(coordinates, Number(zoomValue));
             this.setLayer(urlTemplate, attribution);
             this.createMarker();
-            this.addPopUp(coordinates, "Nice Popup");
+            this.addPopUp("Nice Popup", coordinates);
         }
     }
 
@@ -115,13 +113,9 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         }
     }
 
-    private addPopUp = (coordinates: LatLngLiteral, content: string) => {
+    private addPopUp = (content: string, coordinates: LatLngLiteral) => {
         if (this.map) {
-            this.map.openPopup(
-                popup()
-                .setLatLng(coordinates)
-                .setContent(content)
-            );
+            this.map.openPopup(content, coordinates);
         }
     }
 

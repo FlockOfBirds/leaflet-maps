@@ -1,20 +1,32 @@
 import { LeafletMapsContainerProps } from "../LeafletMapsContainer";
 
+export interface DataSourceLocationProps extends StaticLocationProps, DatabaseLocationProps {
+    locationsEntity?: string;
+    entityConstraint?: string;
+    dataSourceMicroflow?: string;
+}
+
+export interface DatabaseLocationProps {
+    latitudeAttribute?: string;
+    longitudeAttribute?: string;
+}
+
+export interface StaticLocationProps {
+    staticLatitude: string;
+    staticLongitude: string;
+}
+
 export interface Location {
     latitude?: number;
     longitude?: number;
 }
 
-export interface StaticLocation {
-    latitude: string;
-    longitude: string;
-}
-
 export const parseStaticLocations = (props: LeafletMapsContainerProps): Location[] => {
-    return props.staticLocations.map(location => ({
-        latitude: location.latitude.trim() !== "" ? Number(location.latitude) : undefined,
-        longitude: location.longitude.trim() !== "" ? Number(location.longitude) : undefined
-    }));
+        return props.locations.map(locations => ({
+            latitude: locations.staticLatitude.trim() !== "" ? Number(locations.staticLatitude) : undefined,
+            longitude: locations.staticLongitude.trim() !== "" ? Number(locations.staticLongitude) : undefined
+        }
+    ));
 };
 
 export const parseStyle = (style = ""): {[key: string]: string} => { // Doesn't support a few stuff.
