@@ -28,11 +28,6 @@
                     <category>Database / Microflow</category>
                     <description/>
                 </property>
-                <property key="entityConstraint" type="entityConstraint" entityProperty="locationsEntity" required="false">
-                    <caption>XPath constraint</caption>
-                    <category>Database / Microflow</category>
-                    <description>Constraint the 'Data source' 'Database' locations. It could be used with relation to '[%CurrentObject%]'</description>
-                </property>
                 <property key="latitudeAttribute" type="attribute" entityProperty="locationsEntity" required="false">
                     <caption>Latitude attribute</caption>
                     <category>Database / Microflow</category>
@@ -48,6 +43,11 @@
                     <attributeTypes>
                         <attributeType name="Decimal"/>
                     </attributeTypes>
+                </property>
+                <property key="entityConstraint" type="entityConstraint" entityProperty="locationsEntity" required="false">
+                    <caption>XPath constraint</caption>
+                    <category>Database / Microflow</category>
+                    <description>Constraint the 'Data source' 'Database' locations. It could be used with relation to '[%CurrentObject%]'</description>
                 </property>
                 <property key="dataSourceMicroflow" type="microflow" required="false">
                     <caption>Microflow</caption>
@@ -68,11 +68,6 @@
                 </property>
                 <property key="staticLongitude" type="string" required="false">
                     <caption>Longitude</caption>
-                    <category>Static</category>
-                    <description/>
-                </property>
-                <property key="icon" type="image" required="false">
-                    <caption>Marker image</caption>
                     <category>Static</category>
                     <description/>
                 </property>
@@ -103,11 +98,6 @@
             <description/>
         </property>
         <!-- Appearance -->
-        <property key="defaultMakerIcon" type="image" required="false">
-            <caption>Default image</caption>
-            <category>Appearance</category>
-            <description>Overwrite the default marker image of the widget</description>
-        </property>
         <property key="autoZoom" type="boolean" defaultValue="true">
             <caption>Auto zoom</caption>
             <category>Appearance</category>

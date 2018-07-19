@@ -2,8 +2,10 @@ import { Component, createElement } from "react";
 import { LeafletMap, mapProviders } from "./LeafletMap";
 import merge from "deepmerge";
 
-import { DataSourceLocationProps, Location, Nanoflow, parseStaticLocations } from "./Utils/ContainerUtils";
+import { DataSourceLocationProps, DefaultLocations, Location, Nanoflow, parseStaticLocations } from "./Utils/ContainerUtils";
 import { Alert } from "./Alert";
+import { Dimensions } from "./Utils/Styles";
+
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css"; // Re-uses images from ~leaflet package
 import "./ui/LeafletMaps.css";
@@ -17,14 +19,11 @@ export interface WrapperProps {
     style?: string;
 }
 
-export interface LeafletMapsContainerProps extends WrapperProps {
+export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, DefaultLocations {
     urlTemplate: string;
-    defaultCenterLatitude?: string;
-    defaultCenterLongitude?: string;
-    zoomLevel: string;
-    mapProvider: mapProviders;
+    mapProvider?: mapProviders;
     dataSourceType: DataSource;
-    defaultMakerIcon: string;
+    attribution?: string;
     locations: DataSourceLocationProps[];
 }
 
@@ -55,12 +54,9 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             });
         } else {
         return createElement(LeafletMap, {
-            urlTemplate: this.props.urlTemplate,
-            mapProvider: this.props.mapProvider,
-            locations: this.state.locations,
-            defaultCenterLatitude: this.props.defaultCenterLatitude,
-            defaultCenterLongitude: this.props.defaultCenterLongitude,
-            zoomLevel: this.props.zoomLevel
+            allLocations: this.state.locations,
+            className: this.props.class,
+            ...this.props as LeafletMapsContainerProps
         });
     }
     }
@@ -76,7 +72,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         this.unsubscribe();
     }
 
-    private getLocations(props: LeafletMapsContainerProps): any[] {
+    private getLocations = (props: LeafletMapsContainerProps): any[] => {
         return merge.all(props.locations.map(locationAttr =>
             [
                 locationAttr.latitudeAttribute,
@@ -124,7 +120,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         });
     }
 
-    private fetchLocationsByMicroflow(microflow: string, contextObject?: mendix.lib.MxObject) {
+    private fetchLocationsByMicroflow = (microflow: string, contextObject?: mendix.lib.MxObject) => {
         if (microflow) {
             mx.ui.action(microflow, {
                 callback: (mxObjects: mendix.lib.MxObject[]) => this.setLocationsFromMxObjects(mxObjects),
@@ -140,7 +136,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         }
     }
 
-    private fetchLocationsByXpath(contextGuid: string, entityConstraint?: string, locationsEntity?: string) {
+    private fetchLocationsByXpath = (contextGuid: string, entityConstraint?: string, locationsEntity?: string) => {
         const requiresContext = entityConstraint && entityConstraint.indexOf("[%CurrentObject%]") > -1;
         if (!contextGuid && requiresContext) {
             this.setState({ locations: [] });
