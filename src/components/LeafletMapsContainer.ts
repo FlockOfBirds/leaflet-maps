@@ -2,7 +2,15 @@ import { Component, createElement } from "react";
 import { LeafletMap, mapProviders } from "./LeafletMap";
 import merge from "deepmerge";
 
-import { DataSourceLocationProps, DefaultLocations, Location, Nanoflow, parseStaticLocations } from "./Utils/ContainerUtils";
+import {
+    DataSourceLocationProps,
+    DefaultLocations,
+    Location,
+    // MarkerIconProps,
+    Nanoflow,
+    // getStaticMarkerUrl,
+    parseStaticLocations
+} from "./Utils/ContainerUtils";
 import { Alert } from "./Alert";
 import { Dimensions } from "./Utils/Styles";
 
@@ -76,7 +84,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         return merge.all(props.locations.map(locationAttr =>
             [
                 locationAttr.latitudeAttribute,
-                locationAttr.longitudeAttribute
+                locationAttr.longitudeAttribute,
+                locationAttr.markerImageAttribute
             ]
         ));
     }
@@ -90,7 +99,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             }));
 
             if (this.props.locations && this.props.locations.length) {
-                this.getLocations(this.props).forEach(
+                (this.getLocations(this.props)).forEach(
                     (attr: string): number => this.subscriptionHandles.push(mx.data.subscribe({
                         attr,
                         callback: () => this.fetchData(contextObject),
@@ -179,14 +188,24 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             const locations = mxObjects.map(mxObject => {
                 const lat = mxObject.get(locationAttr.latitudeAttribute as string);
                 const lng = mxObject.get(locationAttr.longitudeAttribute as string);
+                // const url = this.getMarkerObjectUrl(mxObject.get(this.props.markerImageAttribute) as string);
 
                 return {
                     latitude: lat ? Number(lat) : undefined,
                     longitude: lng ? Number(lng) : undefined
+                    // url
                 };
             });
 
             this.setState({ locations });
         });
     }
+
+    // private getMarkerObjectUrl(imagekey: string): string {
+    //     const image = this.props.markerImages.find(value => value.enumKey === imagekey);
+
+    //     return image
+    //         ? getStaticMarkerUrl(image.enumImage as string, this.props.defaultMakerIcon as string)
+    //         : "";
+    // }
 }

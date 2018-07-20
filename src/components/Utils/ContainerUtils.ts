@@ -1,6 +1,7 @@
 import { LeafletMapsContainerProps } from "../LeafletMapsContainer";
+import { UrlHelper } from "./UrlHelper";
 
-export interface DataSourceLocationProps extends StaticLocationProps, DatabaseLocationProps {
+export interface DataSourceLocationProps extends DatabaseLocationProps, StaticLocationProps, MarkerIconProps {
     locationsEntity?: string;
     entityConstraint?: string;
     dataSourceMicroflow?: string;
@@ -25,12 +26,30 @@ export interface Nanoflow {
 export interface Location {
     latitude?: number;
     longitude?: number;
+    url?: string;
 }
 
 export interface DefaultLocations {
     defaultCenterLatitude?: string;
     defaultCenterLongitude?: string;
 }
+
+export interface MarkerIconProps {
+    defaultMakerIcon?: string;
+    markerImageAttribute: string;
+    enumKey?: string;
+    enumImage?: string;
+}
+
+export const getStaticMarkerUrl = (enumImage: string, defaultMakerIcon: string): string => {
+    if (enumImage) {
+        return UrlHelper.getStaticResourceUrl(enumImage);
+    } else if (defaultMakerIcon) {
+        return UrlHelper.getStaticResourceUrl(defaultMakerIcon);
+    } else {
+        return "";
+    }
+};
 
 export const parseStaticLocations = (props: LeafletMapsContainerProps): Location[] => {
     return props.locations.map(locations => ({
