@@ -1,23 +1,24 @@
 import { Component, createElement } from "react";
-import { LeafletMap, mapProviders } from "./LeafletMap";
 import merge from "deepmerge";
 
+import { LeafletMap, mapProviders } from "./LeafletMap";
 import {
     DataSourceLocationProps,
     DefaultLocations,
     Location,
-    // MarkerIconProps,
     Nanoflow,
-    // getStaticMarkerUrl,
+    getStaticMarkerUrl,
     parseStaticLocations
 } from "./Utils/ContainerUtils";
-import { Alert } from "./Alert";
 import { Dimensions } from "./Utils/Styles";
 
 import "leaflet/dist/leaflet.css";
-import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css"; // Re-uses images from ~leaflet package
-import "./ui/LeafletMaps.css";
+// Re-uses images from ~leaflet package
+// Use workarount for marker icon, that is not standard compatible with webpack
+// https://github.com/ghybs/leaflet-defaulticon-compatibility#readme
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
 import "leaflet-defaulticon-compatibility";
+import "./ui/LeafletMaps.css";
 
 export interface WrapperProps {
     "class"?: string;
@@ -27,6 +28,8 @@ export interface WrapperProps {
     style?: string;
 }
 
+type DataSource = "static" | "XPath" | "microflow" | "nanoflow";
+
 export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, DefaultLocations {
     urlTemplate: string;
     mapProvider?: mapProviders;
@@ -35,71 +38,63 @@ export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, Def
     locations: DataSourceLocationProps[];
 }
 
-type DataSource = "static" | "XPath" | "microflow" | "nanoflow";
-
 export interface LeafletMapsContainerState {
     alertMessage?: string;
     locations: Location[];
+    markerImageUrl: string;
 }
 
 export default class LeafletMapsContainer extends Component<LeafletMapsContainerProps, LeafletMapsContainerState> {
     private subscriptionHandles: number[] = [];
     readonly state: LeafletMapsContainerState = {
         alertMessage: "",
-        locations: []
+        locations: [],
+        markerImageUrl: ""
     };
 
-    constructor(props: LeafletMapsContainerProps) {
-        super(props);
-    }
-
     render() {
-        if (this.state.alertMessage) {
-            return createElement(Alert, {
-                bootstrapStyle: "danger",
-                className: "widget-leaflet-maps-alert",
-                message: this.state.alertMessage
-            });
-        } else {
+        // TODO should render alert and map
         return createElement(LeafletMap, {
             allLocations: this.state.locations,
             className: this.props.class,
+            alertMessage: this.state.alertMessage,
             ...this.props as LeafletMapsContainerProps
         });
     }
-    }
 
     componentWillReceiveProps(nextProps: LeafletMapsContainerProps) {
-        if (nextProps) {
+        if (nextProps && nextProps.mxObject) {
             this.resetSubscriptions(nextProps.mxObject);
             this.fetchData(nextProps.mxObject);
+            this.getMarkerObjectUrl(nextProps.mxObject);
         }
     }
 
     componentWillUnmount() {
-        this.unsubscribe();
+        this.unsubscribeAll();
     }
 
+    // TODO fix any, funny...
+    // we only need the first one, or should we support it???. show error when there is more than only when type is note static.
     private getLocations = (props: LeafletMapsContainerProps): any[] => {
-        return merge.all(props.locations.map(locationAttr =>
-            [
-                locationAttr.latitudeAttribute,
-                locationAttr.longitudeAttribute,
-                locationAttr.markerImageAttribute
-            ]
-        ));
+        return merge.all(props.locations.map(locationAttr => [
+            locationAttr.latitudeAttribute,
+            locationAttr.longitudeAttribute,
+            locationAttr.staticMarkerIcon
+        ]));
     }
 
     private resetSubscriptions(contextObject?: mendix.lib.MxObject) {
-        this.unsubscribe();
+        this.unsubscribeAll();
         if (contextObject) {
             this.subscriptionHandles.push(mx.data.subscribe({
                 callback: () => this.fetchData(contextObject),
                 guid: contextObject.getGuid()
             }));
-
+            // HEUH???? Time, what opject what attribute(s) data type, optional......
+            // TODO only subscribe to the attribtues when they are comming from Data source context
             if (this.props.locations && this.props.locations.length) {
-                (this.getLocations(this.props)).forEach(
+                this.getLocations(this.props).forEach(
                     (attr: string): number => this.subscriptionHandles.push(mx.data.subscribe({
                         attr,
                         callback: () => this.fetchData(contextObject),
@@ -110,8 +105,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         }
     }
 
-    private unsubscribe() {
-        this.subscriptionHandles.map(mx.data.unsubscribe);
+    private unsubscribeAll() {
+        this.subscriptionHandles.forEach(mx.data.unsubscribe);
     }
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
@@ -188,24 +183,37 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             const locations = mxObjects.map(mxObject => {
                 const lat = mxObject.get(locationAttr.latitudeAttribute as string);
                 const lng = mxObject.get(locationAttr.longitudeAttribute as string);
-                // const url = this.getMarkerObjectUrl(mxObject.get(this.props.markerImageAttribute) as string);
 
                 return {
                     latitude: lat ? Number(lat) : undefined,
-                    longitude: lng ? Number(lng) : undefined
-                    // url
+                    longitude: lng ? Number(lng) : undefined,
+                    url: this.state.markerImageUrl ? this.state.markerImageUrl : ""
                 };
             });
+            // TODO subscribve to loaction attributes....
 
             this.setState({ locations });
         });
     }
 
-    // private getMarkerObjectUrl(imagekey: string): string {
-    //     const image = this.props.markerImages.find(value => value.enumKey === imagekey);
-
-    //     return image
-    //         ? getStaticMarkerUrl(image.enumImage as string, this.props.defaultMakerIcon as string)
-    //         : "";
-    // }
+    private getMarkerObjectUrl = (mxObject: mendix.lib.MxObject) => {
+        this.props.locations.map(location => {
+            if (location && location.markerImage === "staticImage" && location.staticMarkerIcon) {
+                const url = getStaticMarkerUrl(location.staticMarkerIcon);
+                this.setState({ markerImageUrl: url });
+            } else if (location && location.markerImage === "systemImage") {
+                const url = mx.data.getDocumentUrl(mxObject.getGuid(), mxObject.get("changedDate") as number);
+                mx.data.getImageUrl(url,
+                    objectUrl => {
+                        this.setState({ markerImageUrl: objectUrl });
+                    },
+                    error => this.setState({
+                        alertMessage: `Error while retrieving the image url: ${error.message}`
+                    })
+                );
+            } else if (location && location.markerImage === "defaultMarkerIcon") {
+                this.setState({ markerImageUrl: "" });
+            }
+        });
+    }
 }

@@ -35,17 +35,15 @@ export interface DefaultLocations {
 }
 
 export interface MarkerIconProps {
-    defaultMakerIcon?: string;
-    markerImageAttribute: string;
-    enumKey?: string;
-    enumImage?: string;
+    markerImage?: MarherImages;
+    staticMarkerIcon?: string;
 }
 
-export const getStaticMarkerUrl = (enumImage: string, defaultMakerIcon: string): string => {
-    if (enumImage) {
-        return UrlHelper.getStaticResourceUrl(enumImage);
-    } else if (defaultMakerIcon) {
-        return UrlHelper.getStaticResourceUrl(defaultMakerIcon);
+export type MarherImages = "defaultMarkerIcon" | "systemImage" | "staticImage";
+
+export const getStaticMarkerUrl = (staticMarkerIcon: string): string => {
+    if (staticMarkerIcon) {
+        return UrlHelper.getStaticResourceUrl(staticMarkerIcon);
     } else {
         return "";
     }

@@ -1,31 +1,35 @@
 import { Component, createElement } from "react";
-import { LatLngLiteral, Map, marker, tileLayer } from "leaflet";
+import { LatLngLiteral, Map, icon, marker, tileLayer } from "leaflet";
 import * as classNames from "classnames";
 
 import { LeafletMapsContainerProps } from "./LeafletMapsContainer";
 import { DefaultLocations, Location } from "./Utils/ContainerUtils";
-import { Marker } from "./Marker";
 import { Alert } from "./Alert";
 import { Dimensions, getDimensions, parseStyle } from "./Utils/Styles";
 
-type ComponentProps = { allLocations?: Location[], className?: string } & LeafletMapsContainerProps;
+type ComponentProps = {
+    allLocations?: Location[];
+    className?: string;
+    alertMessage?: string;
+} & LeafletMapsContainerProps;
+
 export type LeafletMapProps = ComponentProps & Dimensions & DefaultLocations;
 
 export interface LeafletMapState {
-    alertMessage?: string;
     center: LatLngLiteral;
+    url?: string;
 }
 
 export type mapProviders = "Open street" | "Map box";
 
 export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
-
     private leafletNode?: HTMLDivElement;
     private defaultCenterLocation: LatLngLiteral = { lat: 51.9107963, lng: 4.4789878 };
-
     private map?: Map;
-    state: LeafletMapState = {
-        center: { lat: 0, lng: 0 }
+
+    readonly state: LeafletMapState = {
+        center: { lat: 0, lng: 0 },
+        url: ""
     };
 
     constructor(props: LeafletMapProps) {
@@ -41,14 +45,12 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 className: classNames("widget-leaflet-maps-wrapper", this.props.className),
                 style: { ...getDimensions(this.props), ...parseStyle(this.props.style) }
             },
-            createElement(Alert,
-            {
+            createElement(Alert, {
                 bootstrapStyle: "danger",
                 className: "widget-leaflet-maps-alert",
-                message: this.state.alertMessage
+                message: this.props.alertMessage
             }),
-            createElement("div",
-            {
+            createElement("div", {
                 className: "widget-leaflet-maps",
                 ref: (leafletNode?: HTMLDivElement) => this.leafletNode = leafletNode
             }
@@ -80,7 +82,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private setDefaultCenter(props: LeafletMapProps) {
-        if (props.allLocations && props.allLocations.length) {
+        if (props.allLocations && props.allLocations.length && !props.alertMessage) {
             this.getLocation(props);
         } else if (props.defaultCenterLatitude && props.defaultCenterLongitude) {
             this.setState({
@@ -101,7 +103,8 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                     center: {
                         lat: Number(location.latitude),
                         lng: Number(location.longitude)
-                    }
+                    },
+                    url: location.url
                 });
             });
         }
@@ -124,7 +127,20 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     private createMarker = () => {
         if (this.map) {
-            createElement(Marker, {}, marker(this.state.center).bindPopup("Nice Popup").addTo(this.map));
+            if (this.state.url) {
+                marker(this.state.center)
+                    .setIcon(icon({
+                        iconUrl: this.state.url,
+                        iconSize: [ 38, 95 ],
+                        iconAnchor: [ 22, 94 ]
+                    }))
+                    .bindPopup("Nice Popup")
+                    .addTo(this.map);
+            } else {
+                marker(this.state.center)
+                    .bindPopup("Nice Pop")
+                    .addTo(this.map);
+            }
         }
     }
 }

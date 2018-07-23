@@ -19,7 +19,7 @@
             </enumerationValues>
         </property>
         <property key="locations" type="object" isList="true" required="false">
-            <caption>locations</caption>
+            <caption>Locations</caption>
             <category>Data source</category>
             <description/>
             <properties>
@@ -72,28 +72,20 @@
                     <description/>
                 </property>
                 <!-- Custom Markers -->
-                <property key="defaultMakerIcon" type="image" required="false">
-                    <caption>Default image</caption>
-                    <category>Markers</category>
-                    <description>Overwrite the default marker image of the widget</description>
-                </property>
-                <property key="markerImageAttribute" type="attribute" required="false" entityProperty="locationsEntity">
-                    <caption>Image attribute (Database / Microflow)</caption>
-                    <category>Markers</category>
-                    <description>For 'Datasource' 'Database' or 'Microflow'; Display custom markers based on the enumeration attribute value, as configured in the 'Images' list</description>
-                    <attributeTypes>
-                        <attributeType name="Enum"/>
-                    </attributeTypes>
-                </property>
-                <property key="enumKey" type="string" required="false">
-                    <caption>Enumeration name</caption>
-                    <category>Markers</category>
-                    <description>The enumeration name as a string. (Empty enumeration names can not be used)</description>
-                </property>
-                <property key="enumImage" type="image" required="false">
-                    <caption>Image</caption>
+                <property key="markerImage" type="enumeration" defaultValue="defaultMarkerIcon">
+                    <caption>Marker image</caption>
                     <category>Markers</category>
                     <description/>
+                    <enumerationValues>
+                        <enumerationValue key="defaultMarkerIcon">Default Icon</enumerationValue>
+                        <enumerationValue key="systemImage">Dynamic image</enumerationValue>
+                        <enumerationValue key="staticImage">Static image</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="staticMarkerIcon" type="image" required="false">
+                    <caption>Static image</caption>
+                    <category>Markers</category>
+                    <description>Image from the modeler</description>
                 </property>
             </properties>
         </property>
