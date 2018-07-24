@@ -1,5 +1,7 @@
 import { Component, createElement } from "react";
-import LeafletMapsContainer, { LeafletMapsContainerProps } from "./components/LeafletMapsContainer";
+import LeafletMapsContainer from "./components/LeafletMapsContainer";
+import { Container } from "./components/Utils/ContainerUtils";
+import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 
 // tslint:disable-next-line:class-name
 export default class preview extends Component<LeafletMapsContainerProps> {

@@ -2,10 +2,14 @@ import { Component, createElement } from "react";
 import { LatLngLiteral, Map, icon, marker, tileLayer } from "leaflet";
 import * as classNames from "classnames";
 
-import { LeafletMapsContainerProps } from "./LeafletMapsContainer";
-import { DefaultLocations, Location } from "./Utils/ContainerUtils";
+import { Container } from "./Utils/ContainerUtils";
+import { Style } from "./Utils/Styles";
 import { Alert } from "./Alert";
-import { Dimensions, getDimensions, parseStyle } from "./Utils/Styles";
+import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
+import Location = Container.Location;
+import Dimensions = Style.Dimensions;
+import getDimensions = Style.getDimensions;
+import parseStyle = Style.parseStyle;
 
 type ComponentProps = {
     allLocations?: Location[];
@@ -13,14 +17,12 @@ type ComponentProps = {
     alertMessage?: string;
 } & LeafletMapsContainerProps;
 
-export type LeafletMapProps = ComponentProps & Dimensions & DefaultLocations;
+export type LeafletMapProps = ComponentProps & Dimensions;
 
 export interface LeafletMapState {
     center: LatLngLiteral;
     url?: string;
 }
-
-export type mapProviders = "Open street" | "Map box";
 
 export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     private leafletNode?: HTMLDivElement;
@@ -82,34 +84,25 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private setDefaultCenter(props: LeafletMapProps) {
-        if (props.allLocations && props.allLocations.length && !props.alertMessage) {
-            this.getLocation(props);
-        } else if (props.defaultCenterLatitude && props.defaultCenterLongitude) {
+        const { allLocations, alertMessage, defaultCenterLatitude, defaultCenterLongitude } = props;
+        if (!alertMessage && defaultCenterLatitude && defaultCenterLongitude) {
             this.setState({
                 center: {
-                    lat: Number(props.defaultCenterLatitude),
-                    lng: Number(props.defaultCenterLongitude)
+                    lat: Number(defaultCenterLatitude),
+                    lng: Number(defaultCenterLongitude)
+                }
+            });
+        } else if (!alertMessage && allLocations && allLocations.length) {
+            this.setState({
+                center: {
+                    lat: Number(allLocations[0].latitude),
+                    lng: Number(allLocations[0].longitude)
                 }
             });
         } else {
             this.setState({ center: this.defaultCenterLocation });
         }
     }
-
-    private getLocation = (props: LeafletMapProps) => {
-        if (props.allLocations) {
-            props.allLocations.map(location => {
-                this.setState({
-                    center: {
-                        lat: Number(location.latitude),
-                        lng: Number(location.longitude)
-                    },
-                    url: location.url
-                });
-            });
-        }
-    }
-
     private renderLeafletMap = (coordinates: LatLngLiteral, zoomValue: number) => {
         const { urlTemplate, attribution } = this.props;
         if (this.map) {
@@ -126,9 +119,11 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private createMarker = () => {
-        if (this.map) {
-            if (this.state.url) {
-                marker(this.state.center)
+        const { allLocations } = this.props;
+        if (allLocations && allLocations.length) {
+            allLocations.forEach(location => {
+                if (this.map && this.state.url) {
+                    marker([ Number(location.latitude), Number(location.longitude) ])
                     .setIcon(icon({
                         iconUrl: this.state.url,
                         iconSize: [ 38, 95 ],
@@ -136,11 +131,17 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                     }))
                     .bindPopup("Nice Popup")
                     .addTo(this.map);
-            } else {
-                marker(this.state.center)
-                    .bindPopup("Nice Pop")
-                    .addTo(this.map);
-            }
+                } else if (this.map) {
+                    marker([ Number(location.latitude), Number(location.longitude) ])
+                        .bindPopup("Nice Pop")
+                        .addTo(this.map);
+                }
+            });
+            // TODO fix if there are no locations
+        } else if (this.state.center && this.map) {
+            marker(this.state.center)
+                .bindPopup("Nice Pop")
+                .addTo(this.map);
         }
     }
 }

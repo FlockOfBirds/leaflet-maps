@@ -1,16 +1,13 @@
 import { Component, createElement } from "react";
 import merge from "deepmerge";
 
-import { LeafletMap, mapProviders } from "./LeafletMap";
-import {
-    DataSourceLocationProps,
-    DefaultLocations,
-    Location,
-    Nanoflow,
-    getStaticMarkerUrl,
-    parseStaticLocations
-} from "./Utils/ContainerUtils";
-import { Dimensions } from "./Utils/Styles";
+import { LeafletMap } from "./LeafletMap";
+import { Container } from "./Utils/ContainerUtils";
+import { fetchData } from "./Utils/Data";
+import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
+import parseStaticLocations = Container.parseStaticLocations;
+import Location = Container.Location;
+import getStaticMarkerUrl = Container.getStaticMarkerUrl;
 
 import "leaflet/dist/leaflet.css";
 // Re-uses images from ~leaflet package
@@ -19,24 +16,6 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
 import "leaflet-defaulticon-compatibility";
 import "./ui/LeafletMaps.css";
-
-export interface WrapperProps {
-    "class"?: string;
-    friendlyId: string;
-    mxform: mxui.lib.form._FormBase;
-    mxObject?: mendix.lib.MxObject;
-    style?: string;
-}
-
-type DataSource = "static" | "XPath" | "microflow" | "nanoflow";
-
-export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, DefaultLocations {
-    urlTemplate: string;
-    mapProvider?: mapProviders;
-    dataSourceType: DataSource;
-    attribution?: string;
-    locations: DataSourceLocationProps[];
-}
 
 export interface LeafletMapsContainerState {
     alertMessage?: string;
@@ -106,78 +85,35 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     }
 
     private unsubscribeAll() {
-        this.subscriptionHandles.forEach(mx.data.unsubscribe);
+        this.subscriptionHandles.map(mx.data.unsubscribe);
+        this.subscriptionHandles = [];
     }
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
+        const guid = contextObject ? contextObject.getGuid() : "";
+        const { dataSourceType } = this.props;
         this.props.locations.map(locations => {
             if (this.props.dataSourceType === "static") {
                 this.setState({ locations: parseStaticLocations(this.props) });
-            } else if (this.props.dataSourceType === "microflow" && locations.locationsEntity) {
-                this.fetchLocationsByMicroflow(locations.dataSourceMicroflow as string, contextObject);
-            } else if (this.props.dataSourceType === "XPath") {
-                const guid = contextObject ? contextObject.getGuid() : "";
-                this.fetchLocationsByXpath(guid, locations.entityConstraint, locations.locationsEntity);
-            } else if (this.props.dataSourceType === "nanoflow") {
-                this.fetchLocationsByNanoflow(contextObject, locations.dataSourceNanoflow);
+            } else {
+                fetchData({
+                    guid,
+                    type: dataSourceType,
+                    entity: locations.locationsEntity,
+                    constraint: locations.entityConstraint,
+                    microflow: locations.dataSourceMicroflow,
+                    nanoflow: locations.dataSourceNanoflow
+                })
+                .then(this.setLocationsFromMxObjects)
+                .catch(reason => {
+                    this.setState({
+                        alertMessage: `Failed because of ${reason}`,
+                        locations: []
+                    });
+                });
             }
         });
     }
-
-    private fetchLocationsByMicroflow = (microflow: string, contextObject?: mendix.lib.MxObject) => {
-        if (microflow) {
-            mx.ui.action(microflow, {
-                callback: (mxObjects: mendix.lib.MxObject[]) => this.setLocationsFromMxObjects(mxObjects),
-                error: error => this.setState({
-                    alertMessage: `An error occurred while retrieving locations: ${error.message} in ` + microflow,
-                    locations: []
-                }),
-                params: {
-                    applyto: "selection",
-                    guids: contextObject ? [ contextObject.getGuid() ] : []
-                }
-            });
-        }
-    }
-
-    private fetchLocationsByXpath = (contextGuid: string, entityConstraint?: string, locationsEntity?: string) => {
-        const requiresContext = entityConstraint && entityConstraint.indexOf("[%CurrentObject%]") > -1;
-        if (!contextGuid && requiresContext) {
-            this.setState({ locations: [] });
-
-            return;
-        }
-
-        const constraint = entityConstraint ? entityConstraint.replace(/\[%CurrentObject%\]/g, contextGuid) : "";
-        const xpath = `//${locationsEntity}${constraint}`;
-
-        mx.data.get({
-            callback: mxObjects => this.setLocationsFromMxObjects(mxObjects),
-            error: error =>
-                this.setState({
-                    alertMessage: `An error occurred while retrieving locations: ${error} constraint ` + xpath,
-                    locations: []
-                }),
-            xpath
-        });
-    }
-
-    private fetchLocationsByNanoflow = <T extends Nanoflow>(mxObject?: mendix.lib.MxObject, dataSourceNanoflow?: T) => {
-        const context = new mendix.lib.MxContext();
-        if (mxObject && dataSourceNanoflow && dataSourceNanoflow.nanoflow) {
-            mx.data.callNanoflow({
-                callback: this.setLocationsFromMxObjects,
-                nanoflow: dataSourceNanoflow,
-                origin: this.props.mxform,
-                context,
-                error: error =>
-                    this.setState({
-                        alertMessage: `An error occured while retrieving locations: ${error.message} in ` + dataSourceNanoflow
-                    })
-            });
-        }
-    }
-
     private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[]) => {
         this.props.locations.map(locationAttr => {
             const locations = mxObjects.map(mxObject => {
