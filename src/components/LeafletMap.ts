@@ -21,7 +21,7 @@ export type LeafletMapProps = ComponentProps & Dimensions;
 
 export interface LeafletMapState {
     center: LatLngLiteral;
-    url?: string;
+    locations?: Location[];
 }
 
 export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
@@ -31,7 +31,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     readonly state: LeafletMapState = {
         center: { lat: 0, lng: 0 },
-        url: ""
+        locations: this.props.allLocations
     };
 
     constructor(props: LeafletMapProps) {
@@ -61,6 +61,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     componentWillReceiveProps(newProps: LeafletMapProps) {
         if (newProps) {
+            this.setState({ locations: newProps.allLocations });
             this.setDefaultCenter(newProps);
         }
     }
@@ -84,7 +85,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private setDefaultCenter(props: LeafletMapProps) {
-        const { allLocations, alertMessage, defaultCenterLatitude, defaultCenterLongitude } = props;
+        const { alertMessage, defaultCenterLatitude, defaultCenterLongitude } = props;
         if (!alertMessage && defaultCenterLatitude && defaultCenterLongitude) {
             this.setState({
                 center: {
@@ -92,14 +93,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                     lng: Number(defaultCenterLongitude)
                 }
             });
-        } else if (!alertMessage && allLocations && allLocations.length) {
-            this.setState({
-                center: {
-                    lat: Number(allLocations[0].latitude),
-                    lng: Number(allLocations[0].longitude)
-                }
-            });
-        } else {
+        } else if (this.defaultCenterLocation) {
             this.setState({ center: this.defaultCenterLocation });
         }
     }
@@ -119,13 +113,13 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private createMarker = () => {
-        const { allLocations } = this.props;
-        if (allLocations && allLocations.length) {
-            allLocations.forEach(location => {
-                if (this.map && this.state.url) {
+        const { locations } = this.state;
+        if (locations && locations.length) {
+            locations.forEach((location) => {
+                if (location.url && this.map) {
                     marker([ Number(location.latitude), Number(location.longitude) ])
                     .setIcon(icon({
-                        iconUrl: this.state.url,
+                        iconUrl: location.url,
                         iconSize: [ 38, 95 ],
                         iconAnchor: [ 22, 94 ]
                     }))
@@ -137,11 +131,6 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                         .addTo(this.map);
                 }
             });
-            // TODO fix if there are no locations
-        } else if (this.state.center && this.map) {
-            marker(this.state.center)
-                .bindPopup("Nice Pop")
-                .addTo(this.map);
         }
     }
 }

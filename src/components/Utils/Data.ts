@@ -1,4 +1,4 @@
-import { Data } from "./ContainerUtils";
+import { Container, Data } from "./ContainerUtils";
 
 type MxObject = mendix.lib.MxObject;
 
@@ -63,4 +63,22 @@ const fetchByNanoflow = (actionname: Data.Nanoflow, mxform: mxui.lib.form._FormB
             callback: (mxObjects: MxObject[]) => resolve(mxObjects),
             error: error => reject(`An error occurred while retrieving data via nanoflow: ${actionname}: ${error.message}`)
         });
+    });
+
+export const fetchMarkerObjectUrl = (options: Data.FetchMarkerIcons, mxObject: mendix.lib.MxObject): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const { type, markerIcon } = options;
+        if (type === "staticImage") {
+            resolve(Container.getStaticMarkerUrl(markerIcon));
+        } else if (type === "systemImage") {
+            const url = window.mx.data.getDocumentUrl(mxObject.getGuid(), mxObject.get("changedDate") as number);
+            window.mx.data.getImageUrl(url,
+                objectUrl => resolve(objectUrl),
+                error => reject(`Error while retrieving the image url: ${error.message}`)
+            );
+        } else if (type === "defaultMarkerIcon") {
+            resolve("");
+        } else {
+            reject("An error occured while retriving the Url");
+        }
     });

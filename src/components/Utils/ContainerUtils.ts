@@ -28,8 +28,8 @@ export namespace Container {
     }
 
     export interface DatabaseLocationProps {
-        latitudeAttribute?: string;
-        longitudeAttribute?: string;
+        latitudeAttribute: string;
+        longitudeAttribute: string;
     }
 
     export interface StaticLocationProps {
@@ -49,8 +49,8 @@ export namespace Container {
     }
 
     export interface MarkerIconProps {
-        markerImage?: MarKerImages;
-        staticMarkerIcon?: string;
+        markerImage: MarKerImages;
+        staticMarkerIcon: any;
     }
 
     export type MarKerImages = "defaultMarkerIcon" | "systemImage" | "staticImage";
@@ -93,5 +93,15 @@ export namespace Data {
     export interface Nanoflow {
         nanoflow: object[];
         paramsSpec: { Progress: string };
+    }
+
+    export interface FetchMarkerIcons {
+        type: Container.MarKerImages;
+        markerIcon: string;
+    }
+
+    export interface FetchLocationAttributes extends FetchMarkerIcons {
+        latitude: string;
+        longitude: string;
     }
 }
