@@ -13,7 +13,6 @@ export namespace Container {
     }
 
     export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, DefaultLocations {
-        urlTemplate: string;
         mapProvider?: mapProviders;
         dataSourceType: DataSource;
         attribution?: string;
@@ -54,7 +53,7 @@ export namespace Container {
     }
 
     export type MarKerImages = "defaultMarkerIcon" | "systemImage" | "staticImage";
-    export type DataSource = "static" | "XPath" | "microflow" | "nanoflow";
+    export type DataSource = "static" | "XPath" | "microflow" | "nanoflow" | "context";
     export type mapProviders = "Open street" | "Map box";
 
     export const getStaticMarkerUrl = (staticMarkerIcon: string): string => {

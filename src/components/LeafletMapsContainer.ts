@@ -6,7 +6,6 @@ import { fetchData, fetchMarkerObjectUrl } from "./Utils/Data";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 import parseStaticLocations = Container.parseStaticLocations;
 import Location = Container.Location;
-// import getStaticMarkerUrl = Container.getStaticMarkerUrl;
 
 import "leaflet/dist/leaflet.css";
 // Re-uses images from ~leaflet package
@@ -44,7 +43,9 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         if (nextProps && nextProps.mxObject) {
             this.resetSubscriptions(nextProps.mxObject);
             this.fetchData(nextProps.mxObject);
-            // this.getMarkerObjectUrl(nextProps.mxObject);
+        } else {
+            this.unsubscribeAll();
+            this.setState({ locations: [] });
         }
     }
 
@@ -73,7 +74,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                         location.staticMarkerIcon
                     ]
                 .forEach(
-                    (attr: string): number => this.subscriptionHandles.push(window.mx.data.subscribe({
+                    (attr): number => this.subscriptionHandles.push(window.mx.data.subscribe({
                         attr,
                         callback: () => this.fetchData(contextObject),
                         guid: contextObject.getGuid()
@@ -84,7 +85,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     }
 
     private unsubscribeAll() {
-        this.subscriptionHandles.map(window.mx.data.unsubscribe);
+        this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
         this.subscriptionHandles = [];
     }
 
@@ -94,6 +95,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         this.props.locations.map(locations => {
             if (this.props.dataSourceType === "static") {
                 this.setState({ locations: parseStaticLocations(this.props) });
+            } else if (this.props.dataSourceType === "context" && contextObject) {
+                this.setLocationsFromMxObjects([ contextObject ]);
             } else {
                 fetchData({
                     guid,

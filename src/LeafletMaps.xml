@@ -12,6 +12,7 @@
             <category>Data source</category>
             <description/>
             <enumerationValues>
+                <enumerationValue key="context">Context</enumerationValue>
                 <enumerationValue key="XPath">Database</enumerationValue>
                 <enumerationValue key="microflow">Microflow</enumerationValue>
                 <enumerationValue key="static">Static</enumerationValue>
@@ -97,11 +98,6 @@
                 <enumerationValue key="openStreet">Open street</enumerationValue>
                 <enumerationValue key="mapBox">Map box</enumerationValue>
             </enumerationValues>
-        </property>
-        <property key="urlTemplate" type="string" required="false">
-            <caption>URL template</caption>
-            <category>Data source</category>
-            <description/>
         </property>
         <property key="defaultCenterLatitude" type="string" required="false">
             <caption>Default center latitude</caption>

@@ -30,6 +30,7 @@ export const fetchData = (options: Data.FetchDataOptions): Promise<MxObject[]> =
 
 const fetchByXPath = (options: Data.FetchByXPathOptions): Promise<MxObject[]> => new Promise<MxObject[]>((resolve, reject) => {
     const { guid, entity, constraint } = options;
+
     const entityPath = entity.split("/");
     const entityName = entityPath.length > 1 ? entityPath[entityPath.length - 1] : entity;
     const xpath = `//${entityName}${constraint.split("[%CurrentObject%]").join(guid)}`;
