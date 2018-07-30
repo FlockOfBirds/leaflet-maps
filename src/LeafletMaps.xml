@@ -73,12 +73,11 @@
                     <description/>
                 </property>
                 <!-- Custom Markers -->
-                <property key="markerImage" type="enumeration" defaultValue="defaultMarkerIcon">
+                <property key="markerImage" type="enumeration" defaultValue="staticImage">
                     <caption>Marker image</caption>
                     <category>Markers</category>
                     <description/>
                     <enumerationValues>
-                        <enumerationValue key="defaultMarkerIcon">Default Icon</enumerationValue>
                         <enumerationValue key="systemImage">Dynamic image</enumerationValue>
                         <enumerationValue key="staticImage">Static image</enumerationValue>
                     </enumerationValues>

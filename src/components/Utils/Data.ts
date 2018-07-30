@@ -66,20 +66,18 @@ const fetchByNanoflow = (actionname: Data.Nanoflow, mxform: mxui.lib.form._FormB
         });
     });
 
-export const fetchMarkerObjectUrl = (options: Data.FetchMarkerIcons, mxObject: mendix.lib.MxObject): Promise<string> =>
+export const fetchMarkerObjectUrl = (options: Data.FetchMarkerIcons, mxObject?: mendix.lib.MxObject): Promise<string> =>
     new Promise((resolve, reject) => {
         const { type, markerIcon } = options;
         if (type === "staticImage") {
             resolve(Container.getStaticMarkerUrl(markerIcon));
-        } else if (type === "systemImage") {
+        } else if (type === "systemImage" && mxObject) {
             const url = window.mx.data.getDocumentUrl(mxObject.getGuid(), mxObject.get("changedDate") as number);
             window.mx.data.getImageUrl(url,
                 objectUrl => resolve(objectUrl),
                 error => reject(`Error while retrieving the image url: ${error.message}`)
             );
-        } else if (type === "defaultMarkerIcon") {
-            resolve("");
         } else {
-            reject("An error occured while retriving the Url");
+            resolve("");
         }
     });

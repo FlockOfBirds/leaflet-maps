@@ -52,7 +52,7 @@ export namespace Container {
         staticMarkerIcon: any;
     }
 
-    export type MarKerImages = "defaultMarkerIcon" | "systemImage" | "staticImage";
+    export type MarKerImages = "systemImage" | "staticImage";
     export type DataSource = "static" | "XPath" | "microflow" | "nanoflow" | "context";
     export type mapProviders = "Open street" | "Map box";
 

@@ -1,7 +1,7 @@
 import { Component, createElement } from "react";
 import {
     FeatureGroup,
-    LatLng,
+    // LatLng,
     LatLngBounds,
     LatLngLiteral,
     Map,
@@ -47,7 +47,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     private map?: Map;
 
     private markerGroup = new FeatureGroup();
-    private markers!: Marker;
+    private markers: Marker[] = [];
     private bounds!: LatLngBounds;
 
     readonly state: LeafletMapState = {
@@ -86,7 +86,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     componentWillReceiveProps(newProps: LeafletMapProps) {
         if (newProps) {
             this.setState({ locations: newProps.allLocations });
-            this.setBounds(newProps);
+            this.setDefaultCenter(newProps);
         }
     }
 
@@ -142,30 +142,16 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         }
     }
 
-    private setBounds = (props: LeafletMapProps) => {
-        const { allLocations } = props;
-        if (allLocations && allLocations.length > 1) {
-            this.bounds = new LatLngBounds({ lat: 0, lng: 0 }, { lat: 0, lng: 0 });
-            allLocations.forEach(maplocation => {
-                if (this.validLocation(maplocation)) {
-                    this.updateBounds(props, maplocation);
-                } else {
-                    this.setState({ alertMessage: "Latitude and longitude values are not valid" });
-                }
-            });
-        }
-        this.setDefaultCenter(props);
-    }
-
-    private updateBounds = (props: LeafletMapProps, maplocation: Location) => {
+    private updateBounds = (markerGroup: FeatureGroup) => {
         if (this.map) {
-            this.bounds.extend(new LatLng(maplocation.latitude as number, maplocation.longitude as number));
-            this.map.fitBounds(this.bounds);
-            this.setZoom(props);
+            this.bounds = new LatLngBounds({ lat: 0, lng: 0 }, { lat: 0, lng: 0 });
+            this.map.fitBounds(markerGroup.getBounds());
+            this.setZoom(this.props);
             this.setState({
                 center: {
                     lat: this.bounds.getCenter().lat,
-                    lng: this.bounds.getCenter().lng
+                    lng: this.bounds.getCenter().lng,
+                    zoom: this.map.getZoom()
                 }
             });
         }
@@ -182,36 +168,45 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             } else {
                 zoom = zoomLevel;
             }
-            this.setState({ zoomValue: zoom });
+            this.map.setZoom(zoom);
         }
     }
 
     private createMarker = () => {
         const { locations } = this.state;
-        if (locations && locations.length && this.map) {
-            locations.forEach((location) => {
-                const { latitude, longitude, url } = location;
-                if (url) {
-                    this.markers = new Marker([
-                        Number(latitude),
-                        Number(longitude)
-                    ])
-                        .setIcon(icon({
-                            iconUrl: url,
-                            iconSize: [ 38, 95 ],
-                            iconAnchor: [ 22, 94 ]
-                        }));
-                } else {
-                    this.markers = new Marker([
-                        Number(location.latitude),
-                        Number(location.longitude)
-                    ]);
-                }
-                this.markerGroup.addLayer(this.markers);
-            });
-            this.map.addLayer(this.markerGroup);
-        } else if (this.map && this.markerGroup) {
-            this.map.removeLayer(this.markerGroup);
+        if (this.map && this.markerGroup) {
+            if (locations && locations.length) {
+                this.markers.forEach(marker => this.markerGroup.removeLayer(marker));
+                this.markers = [];
+                locations.forEach((location) => {
+                    const { latitude, longitude, url } = location;
+                    if (this.validLocation(location)) {
+                        if (url) {
+                            this.markers.push(new Marker([
+                                Number(latitude),
+                                Number(longitude)
+                            ])
+                                .setIcon(icon({
+                                    iconUrl: url,
+                                    iconSize: [ 38, 95 ],
+                                    iconAnchor: [ 22, 94 ]
+                                })));
+                        } else {
+                            this.markers.push(new Marker([
+                                Number(location.latitude),
+                                Number(location.longitude)
+                            ]));
+                        }
+                    } else {
+                        this.setState({ alertMessage: "Invalid Location Coordinates" });
+                    }
+                });
+                this.markers.forEach(marker => this.markerGroup.addLayer(marker));
+                this.map.addLayer(this.markerGroup);
+                this.updateBounds(this.markerGroup);
+            } else {
+                this.map.removeLayer(this.markerGroup);
+            }
         }
     }
 
