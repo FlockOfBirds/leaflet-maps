@@ -78,8 +78,8 @@
                     <category>Markers</category>
                     <description/>
                     <enumerationValues>
-                        <enumerationValue key="systemImage">Dynamic image</enumerationValue>
                         <enumerationValue key="staticImage">Static image</enumerationValue>
+                        <enumerationValue key="systemImage">Dynamic image</enumerationValue>
                     </enumerationValues>
                 </property>
                 <property key="staticMarkerIcon" type="image" required="false">

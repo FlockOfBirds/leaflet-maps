@@ -30,7 +30,6 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     };
 
     render() {
-        // TODO should render alert and map
         return createElement(LeafletMap, {
             allLocations: this.state.locations,
             className: this.props.class,
@@ -44,17 +43,17 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             this.resetSubscriptions(nextProps.mxObject);
             this.fetchData(nextProps.mxObject);
         } else {
-            this.unsubscribeAll();
             this.setState({ locations: [] });
         }
     }
 
     componentWillUnmount() {
-        this.unsubscribeAll();
+        this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
     }
 
     private resetSubscriptions(contextObject?: mendix.lib.MxObject) {
-        this.unsubscribeAll();
+        this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
+        this.subscriptionHandles = [];
         if (contextObject) {
             this.subscriptionHandles.push(window.mx.data.subscribe({
                 guid: contextObject.getGuid(),
@@ -84,17 +83,12 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         }
     }
 
-    private unsubscribeAll() {
-        this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
-        this.subscriptionHandles = [];
-    }
-
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
         const guid = contextObject ? contextObject.getGuid() : "";
         const { dataSourceType } = this.props;
         this.props.locations.map(locations => {
             if (this.props.dataSourceType === "static") {
-                this.setState({ locations: parseStaticLocations(this.props) });
+                parseStaticLocations(this.props).then(results => this.setState({ locations: results }));
             } else if (this.props.dataSourceType === "context" && contextObject) {
                 this.setLocationsFromMxObjects([ contextObject ]);
             } else {
@@ -132,7 +126,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                             longitude: lng ? Number(lng) : undefined,
                             url: markerUrl
                         };
-                    });
+                    })
+                    .catch(reason => reason);
             });
 
             Promise.all(locations).then(results => {
