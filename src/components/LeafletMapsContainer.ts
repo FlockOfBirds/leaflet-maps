@@ -114,6 +114,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             }
         });
     }
+
     private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[]) => {
         this.props.locations.map(locationAttr => {
             const locations = mxObjects.map(mxObject => {
@@ -171,7 +172,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                         context,
                         error: error => this.setState({ alertMessage: `Error while opening page ${page}: ${error.message}` })
                     });
-                } else {
+                } else if (onClickEvent !== "doNothing") {
                     this.setState({ alertMessage: `No Action was passed ${onClickEvent}` });
                 }
             }

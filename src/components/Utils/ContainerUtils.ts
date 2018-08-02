@@ -13,10 +13,10 @@ export namespace Container {
         style?: string;
     }
 
-    export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, DefaultLocations {
+    export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, DefaultLocations, MapControlOptions {
         mapProvider?: mapProviders;
         dataSourceType: DataSource;
-        attribution?: string;
+        mapBoxAccessToken?: string;
         locations: DataSourceLocationProps[];
     }
 
@@ -62,11 +62,18 @@ export namespace Container {
         page: string;
     }
 
+    export interface MapControlOptions {
+        optionDrag?: boolean;
+        optionScroll?: boolean;
+        optionZoomControl?: boolean;
+        attributionControl?: boolean;
+    }
+
     export type MarKerImages = "systemImage" | "staticImage";
     export type DataSource = "static" | "XPath" | "microflow" | "nanoflow" | "context";
     export type OnClickOptions = "doNothing" | "showPage" | "callMicroflow" | "callNanoflow";
     export type PageLocation = "content" | "popup" | "modal";
-    export type mapProviders = "Open street" | "Map box";
+    export type mapProviders = "openStreet" | "mapBox";
 
     export const getStaticMarkerUrl = (staticMarkerIcon: string): string => {
         if (staticMarkerIcon) {
@@ -124,10 +131,5 @@ export namespace Data {
     export interface FetchMarkerIcons {
         type: Container.MarKerImages;
         markerIcon: string;
-    }
-
-    export interface FetchLocationAttributes extends FetchMarkerIcons {
-        latitude: string;
-        longitude: string;
     }
 }

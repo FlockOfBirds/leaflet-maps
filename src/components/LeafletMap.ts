@@ -15,7 +15,6 @@ import { Style } from "./Utils/Styles";
 import { Alert } from "./Alert";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 import Location = Container.Location;
-// import mapProvider = Container.mapProviders;
 import Dimensions = Style.Dimensions;
 import getDimensions = Style.getDimensions;
 import parseStyle = Style.parseStyle;
@@ -32,15 +31,13 @@ export type LeafletMapProps = ComponentProps & Dimensions;
 export interface LeafletMapState {
     center: LatLngLiteral;
     alertMessage?: string;
+    locations?: Location[];
     isLoading?: boolean;
 }
 
 export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     private leafletNode?: HTMLDivElement;
     private defaultCenterLocation: LatLngLiteral = { lat: 51.9107963, lng: 4.4789878 };
-
-    private customMapTypeUrl = `//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`;
-    private mapAttribution = `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`;
     private map?: Map;
 
     private markerGroup = new FeatureGroup();
@@ -48,7 +45,18 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     readonly state: LeafletMapState = {
         center: { lat: 0, lng: 0 },
         alertMessage: "",
+        locations: [],
         isLoading: true
+    };
+
+    readonly CUSTOMTYPEURLS = {
+        openStreetMap: `//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`,
+        mapbox: `//api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${this.props.mapBoxAccessToken}`
+    };
+
+    readonly MAPATTRIBUTIONS = {
+        openStreetMapAttr: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`,
+        mapboxAttr: `Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>`
     };
 
     render() {
@@ -71,20 +79,28 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     componentWillReceiveProps(newProps: LeafletMapProps) {
         if (newProps) {
-            this.renderMarkers(newProps);
+            this.setDefaultCenter(newProps);
+            this.setState({ locations: newProps.allLocations });
         }
     }
 
     componentDidMount() {
         if (this.leafletNode) {
-            this.map = new Map(this.leafletNode);
-            this.setLayer(this.customMapTypeUrl, this.map, this.mapAttribution);
+            this.map = new Map(this.leafletNode, {
+                scrollWheelZoom: this.props.optionScroll,
+                zoomControl: this.props.optionZoomControl,
+                attributionControl: this.props.attributionControl,
+                minZoom: 2,
+                maxZoom: 20,
+                dragging: this.props.optionDrag
+            });
+            this.map.addLayer(this.setLayer());
         }
     }
 
     componentDidUpdate(prevProps: LeafletMapProps, prevState: LeafletMapState) {
-        if (this.state !== prevState && this.props !== prevProps && this.map) {
-            this.renderLeafletMap(this.state.center, this.map);
+        if (this.state.locations !== prevState.locations && this.props !== prevProps) {
+            this.renderLeafletMap(this.state.center);
         }
     }
 
@@ -94,45 +110,55 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         }
     }
 
-    private renderLeafletMap = (coordinates: LatLngLiteral, map: Map) =>
-        map.panTo(coordinates).setMinZoom(2)
+    private renderLeafletMap = (coordinates: LatLngLiteral) => {
+        if (this.map) {
+            this.map.panTo(coordinates);
+            this.renderMarkers();
+        }
+    }
 
-    private setLayer = (urlTemplate: string, map: Map, mapAttribution?: string) =>
-        map.addLayer(tileLayer(urlTemplate, { attribution: mapAttribution }))
+    private setLayer = () => {
+        if (this.props.mapProvider === "openStreet") {
+            return tileLayer(this.CUSTOMTYPEURLS.openStreetMap, {
+                attribution: this.MAPATTRIBUTIONS.openStreetMapAttr
+            });
+        } else if (this.props.mapProvider === "mapBox") {
+            return tileLayer(this.CUSTOMTYPEURLS.mapbox, {
+                attribution: this.MAPATTRIBUTIONS.mapboxAttr,
+                id: "mapbox.streets"
+            });
+        } else {
+            return tileLayer(this.CUSTOMTYPEURLS.openStreetMap);
+        }
+    }
 
-    private renderMarkers = (props: LeafletMapProps) => {
-        const { allLocations } = props;
+    private renderMarkers = () => {
+        const { locations } = this.state;
         if (this.markerGroup) {
             this.markerGroup.clearLayers();
-            if (allLocations && allLocations.length) {
-                allLocations.forEach(location =>
+            if (locations && locations.length) {
+                locations.forEach(location =>
                     this.createMarker(location)
                         .then(marker =>
                             this.markerGroup.addLayer(
                                 marker.on("click", event =>
                                     this.markerOnClick(event))
                                 ))
-                        .then(
-                            layer =>
+                        .then(layer =>
                                 this.map
                                     ? this.map.addLayer(layer)
                                     : undefined)
-                        .then(
-                            map =>
-                                map ? map.fitBounds(
-                                        this.markerGroup.getBounds())
-                                    : undefined) // Custom zoom won't work for multiple locations
-                        .catch(
-                            reason =>
-                                !this.state.alertMessage
-                                    ? this.setState({ alertMessage: `${reason}` })
-                                    : this.setState({ alertMessage: "" }))
+                        .then(map =>
+                                map
+                                ? map.fitBounds(this.markerGroup.getBounds()).setMaxZoom(15)
+                                : undefined) // Custom zoom won't work for multiple locations
+                        .catch(reason =>
+                                this.setState({ alertMessage: `${reason}` }))
                 );
             } else if (this.map) {
                 this.map.removeLayer(this.markerGroup);
             }
         }
-        this.setDefaultCenter(props);
     }
 
     private setDefaultCenter = (props: LeafletMapProps) => {

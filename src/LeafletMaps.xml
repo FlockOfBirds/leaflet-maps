@@ -7,7 +7,7 @@
     <icon/>
     <properties>
         <!-- Data source -->
-        <property key="dataSourceType" type="enumeration" defaultValue="XPath">
+        <property key="dataSourceType" type="enumeration" defaultValue="context">
             <caption>Data source</caption>
             <category>Data source</category>
             <description/>
@@ -136,6 +136,11 @@
                 <enumerationValue key="mapBox">Map box</enumerationValue>
             </enumerationValues>
         </property>
+        <property key="mapBoxAccessToken" type="string" required="false">
+            <caption>Mapbox Token</caption>
+            <category>Data source</category>
+            <description/>
+        </property>
         <property key="defaultCenterLatitude" type="string" required="false">
             <caption>Default center latitude</caption>
             <category>Data source</category>
@@ -201,6 +206,11 @@
             <caption>Zoom</caption>
             <category>Controls</category>
             <description>Show zoom control [ + ] [ - ]</description>
+        </property>
+        <property key="attributionControl" type="boolean" defaultValue="true">
+            <caption>Attribution control</caption>
+            <category>Controls</category>
+            <description>Add attributions to the map (credits)</description>
         </property>
     </properties>
 </widget>
