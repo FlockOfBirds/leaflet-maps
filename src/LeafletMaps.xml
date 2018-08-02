@@ -87,6 +87,44 @@
                     <category>Markers</category>
                     <description>Image from the modeler</description>
                 </property>
+                <property key="onClickEvent" type="enumeration" defaultValue="doNothing">
+                    <caption>On click</caption>
+                    <category>Markers</category>
+                    <description/>
+                    <enumerationValues>
+                        <enumerationValue key="doNothing">Do nothing</enumerationValue>
+                        <enumerationValue key="callMicroflow">Call a microflow</enumerationValue>
+                        <enumerationValue key="callNanoflow">Call a nanoflow</enumerationValue>
+                        <enumerationValue key="showPage">Show a page</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="onClickMicroflow" type="microflow" required="false" entityProperty="locationsEntity">
+                    <caption>On click microflow</caption>
+                    <category>Markers</category>
+                    <description>The microflow that will be executed when a marker is clicked</description>
+                    <returnType type="Void" />
+                </property>
+                <property key="onClickNanoflow" type="nanoflow" required="false" entityProperty="locationsEntity">
+                    <caption>On click nanoflow</caption>
+                    <category>Markers</category>
+                    <description>The nanoflow that will be executed when a marker is clicked</description>
+                    <returnType type="Void" />
+                </property>
+                <property key="openPageAs" type="enumeration" defaultValue="content">
+                    <caption>Open page as</caption>
+                    <category>Markers</category>
+                    <description/>
+                    <enumerationValues>
+                        <enumerationValue key="content">Full page</enumerationValue>
+                        <enumerationValue key="popup">Popup</enumerationValue>
+                        <enumerationValue key="modal">Blocking popup</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="page" type="form" required="false">
+                    <caption>Page</caption>
+                    <category>Markers</category>
+                    <description>The page that will be opened when a marker is clicked</description>
+                </property>
             </properties>
         </property>
         <property key="mapProvider" type="enumeration" defaultValue="openStreet">
@@ -147,6 +185,22 @@
             <caption>Map height</caption>
             <category>Appearance</category>
             <description/>
+        </property>
+        <!-- Map Controls -->
+        <property key="optionDrag" type="boolean" defaultValue="true">
+            <caption>Drag</caption>
+            <category>Controls</category>
+            <description>Enable moving center by dragging</description>
+        </property>
+        <property key="optionScroll" type="boolean" defaultValue="true">
+            <caption>Scroll to zoom</caption>
+            <category>Controls</category>
+            <description>Enable zooming the map using the mouse scroll wheel</description>
+        </property>
+        <property key="optionZoomControl" type="boolean" defaultValue="true">
+            <caption>Zoom</caption>
+            <category>Controls</category>
+            <description>Show zoom control [ + ] [ - ]</description>
         </property>
     </properties>
 </widget>

@@ -34,6 +34,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             allLocations: this.state.locations,
             className: this.props.class,
             alertMessage: this.state.alertMessage,
+            onClickAction: this.executeAction,
             ...this.props as LeafletMapsContainerProps
         });
     }
@@ -43,7 +44,10 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             this.resetSubscriptions(nextProps.mxObject);
             this.fetchData(nextProps.mxObject);
         } else {
-            this.setState({ locations: [] });
+            this.setState({
+                locations: [],
+                alertMessage: ""
+            });
         }
     }
 
@@ -124,6 +128,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                         return {
                             latitude: lat ? Number(lat) : undefined,
                             longitude: lng ? Number(lng) : undefined,
+                            mxObject,
                             url: markerUrl
                         };
                     })
@@ -134,6 +139,42 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                 this.setState({ locations: results });
             });
 
+        });
+    }
+
+    private executeAction = (markerLocation: Location) => {
+        const object = markerLocation.mxObject;
+
+        this.props.locations.forEach(locations => {
+            if (object) {
+                const { mxform } = this.props;
+                const { onClickEvent, onClickMicroflow, onClickNanoflow, openPageAs, page } = locations;
+                const context = new mendix.lib.MxContext();
+                context.setContext(object.getEntity(), object.getGuid());
+
+                if (onClickEvent === "callMicroflow" && onClickMicroflow) {
+                    mx.ui.action(onClickMicroflow, {
+                        context,
+                        origin: mxform,
+                        error: error => this.setState({ alertMessage: `Error while executing on click microflow ${onClickMicroflow} : ${error.message}` })
+                    });
+                } else if (onClickEvent === "callNanoflow" && onClickNanoflow.nanoflow) {
+                    window.mx.data.callNanoflow({
+                        nanoflow: onClickNanoflow,
+                        origin: mxform,
+                        context,
+                        error: error => this.setState({ alertMessage: `Error while executing on click nanoflow: ${error.message}` })
+                    });
+                } else if (onClickEvent === "showPage" && page) {
+                    window.mx.ui.openForm(page, {
+                        location: openPageAs,
+                        context,
+                        error: error => this.setState({ alertMessage: `Error while opening page ${page}: ${error.message}` })
+                    });
+                } else {
+                    this.setState({ alertMessage: `No Action was passed ${onClickEvent}` });
+                }
+            }
         });
     }
 }

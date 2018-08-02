@@ -1,8 +1,8 @@
 import { Component, createElement } from "react";
 import {
     FeatureGroup,
-    LatLngBounds,
     LatLngLiteral,
+    LeafletEvent,
     Map,
     Marker,
     icon,
@@ -24,6 +24,7 @@ type ComponentProps = {
     allLocations?: Location[];
     className?: string;
     alertMessage?: string;
+    onClickAction?: (location: Location) => void;
 } & LeafletMapsContainerProps;
 
 export type LeafletMapProps = ComponentProps & Dimensions;
@@ -31,7 +32,6 @@ export type LeafletMapProps = ComponentProps & Dimensions;
 export interface LeafletMapState {
     center: LatLngLiteral;
     alertMessage?: string;
-    zoomValue?: number;
     isLoading?: boolean;
 }
 
@@ -48,16 +48,8 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     readonly state: LeafletMapState = {
         center: { lat: 0, lng: 0 },
         alertMessage: "",
-        zoomValue: this.props.zoomLevel,
         isLoading: true
     };
-
-    constructor(props: LeafletMapProps) {
-        super(props);
-
-        this.renderLeafletMap = this.renderLeafletMap.bind(this);
-        this.setDefaultCenter = this.setDefaultCenter.bind(this);
-    }
 
     render() {
         return createElement("div",
@@ -67,8 +59,8 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             },
             createElement(Alert, {
                 bootstrapStyle: "danger",
-                className: "widget-leaflet-maps-alert",
-                message: this.props.alertMessage || this.state.alertMessage
+                className: "widget-leaflet-maps-alert leaflet-control",
+                message: this.state.alertMessage || this.props.alertMessage
             }),
             createElement("div", {
                 className: "widget-leaflet-maps",
@@ -79,7 +71,6 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     componentWillReceiveProps(newProps: LeafletMapProps) {
         if (newProps) {
-            this.setDefaultCenter(newProps);
             this.renderMarkers(newProps);
         }
     }
@@ -92,7 +83,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     componentDidUpdate(prevProps: LeafletMapProps, prevState: LeafletMapState) {
-        if (prevState !== this.state && prevProps !== this.props && this.map) {
+        if (this.state !== prevState && this.props !== prevProps && this.map) {
             this.renderLeafletMap(this.state.center, this.map);
         }
     }
@@ -104,10 +95,45 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private renderLeafletMap = (coordinates: LatLngLiteral, map: Map) =>
-        map.panTo(coordinates)
+        map.panTo(coordinates).setMinZoom(2)
 
     private setLayer = (urlTemplate: string, map: Map, mapAttribution?: string) =>
         map.addLayer(tileLayer(urlTemplate, { attribution: mapAttribution }))
+
+    private renderMarkers = (props: LeafletMapProps) => {
+        const { allLocations } = props;
+        if (this.markerGroup) {
+            this.markerGroup.clearLayers();
+            if (allLocations && allLocations.length) {
+                allLocations.forEach(location =>
+                    this.createMarker(location)
+                        .then(marker =>
+                            this.markerGroup.addLayer(
+                                marker.on("click", event =>
+                                    this.markerOnClick(event))
+                                ))
+                        .then(
+                            layer =>
+                                this.map
+                                    ? this.map.addLayer(layer)
+                                    : undefined)
+                        .then(
+                            map =>
+                                map ? map.fitBounds(
+                                        this.markerGroup.getBounds())
+                                    : undefined) // Custom zoom won't work for multiple locations
+                        .catch(
+                            reason =>
+                                !this.state.alertMessage
+                                    ? this.setState({ alertMessage: `${reason}` })
+                                    : this.setState({ alertMessage: "" }))
+                );
+            } else if (this.map) {
+                this.map.removeLayer(this.markerGroup);
+            }
+        }
+        this.setDefaultCenter(props);
+    }
 
     private setDefaultCenter = (props: LeafletMapProps) => {
         const { allLocations, defaultCenterLatitude, defaultCenterLongitude } = props;
@@ -121,33 +147,6 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             });
         } else if (allLocations && allLocations.length === 0) {
             this.setState({ center: this.defaultCenterLocation });
-        }
-    }
-
-    private renderMarkers(props: LeafletMapProps) {
-        const { allLocations } = props;
-        if (this.markerGroup) {
-            this.markerGroup.clearLayers();
-            if (allLocations && allLocations.length) {
-                allLocations.forEach(location =>
-                    this.createMarker(location)
-                        .then(marker => this.markerGroup.addLayer(marker))
-                        .then(layer => this.map ? this.map.addLayer(layer) : undefined)
-                        .then(map => map ? map.fitBounds(this.markerGroup.getBounds()) : undefined)
-                        .then(latLngBounds => latLngBounds ? this.updateBounds(latLngBounds.getBounds()) : undefined)
-                        .catch(reason => this.setState({ alertMessage: `${reason}` }))
-                );
-            } else if (this.map) {
-                this.map.removeLayer(this.markerGroup);
-            }
-        }
-    }
-
-    private updateBounds = (latLngBounds: LatLngBounds) => {
-        if (this.map) {
-            this.setState({
-                center: latLngBounds.getCenter()
-            });
         }
     }
 
@@ -170,6 +169,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         new Promise((resolve, reject) => {
             const { latitude, longitude, url } = location;
             if (this.validLocation(location)) {
+                this.setState({ alertMessage: "" });
                 if (url) {
                     resolve(
                         new Marker([
@@ -187,8 +187,8 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                         Number(longitude)
                     ]));
                 }
-            } else {
-                reject("Failed beacuse Invalid Coordinates were passed");
+            } else if (!this.validLocation(location)) {
+                reject("Invalid Coordinates were passed");
             }
         })
 
@@ -199,5 +199,12 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             && lat <= 90 && lat >= -90
             && lng <= 180 && lng >= -180
             && !(lat === 0 && lng === 0);
+    }
+
+    private markerOnClick = (e: LeafletEvent) => {
+        const { onClickAction, allLocations } = this.props;
+        if (onClickAction && allLocations) {
+            onClickAction(allLocations[allLocations.findIndex(targetLoc => targetLoc.latitude === e.target.getLatLng().lat)]);
+        }
     }
 }

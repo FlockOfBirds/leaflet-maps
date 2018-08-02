@@ -20,7 +20,7 @@ export namespace Container {
         locations: DataSourceLocationProps[];
     }
 
-    export interface DataSourceLocationProps extends DatabaseLocationProps, StaticLocationProps, MarkerIconProps {
+    export interface DataSourceLocationProps extends DatabaseLocationProps, StaticLocationProps, MarkerIconProps, MarkerEvents {
         locationsEntity?: string;
         entityConstraint?: string;
         dataSourceMicroflow?: string;
@@ -40,6 +40,7 @@ export namespace Container {
     export interface Location {
         latitude?: number;
         longitude?: number;
+        mxObject?: mendix.lib.MxObject;
         url?: string;
     }
 
@@ -53,8 +54,18 @@ export namespace Container {
         staticMarkerIcon: any;
     }
 
+    export interface MarkerEvents {
+        onClickMicroflow: string;
+        onClickNanoflow: Data.Nanoflow;
+        onClickEvent: OnClickOptions;
+        openPageAs: PageLocation;
+        page: string;
+    }
+
     export type MarKerImages = "systemImage" | "staticImage";
     export type DataSource = "static" | "XPath" | "microflow" | "nanoflow" | "context";
+    export type OnClickOptions = "doNothing" | "showPage" | "callMicroflow" | "callNanoflow";
+    export type PageLocation = "content" | "popup" | "modal";
     export type mapProviders = "Open street" | "Map box";
 
     export const getStaticMarkerUrl = (staticMarkerIcon: string): string => {
