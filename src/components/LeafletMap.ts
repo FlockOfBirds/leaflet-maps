@@ -11,13 +11,15 @@ import {
 import * as classNames from "classnames";
 
 import { Container } from "./Utils/ContainerUtils";
-import { Style } from "./Utils/Styles";
+import { MapUtils, Style } from "./Utils/Styles";
 import { Alert } from "./Alert";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 import Location = Container.Location;
 import Dimensions = Style.Dimensions;
 import getDimensions = Style.getDimensions;
 import parseStyle = Style.parseStyle;
+import customUrls = MapUtils.customUrls;
+import mapAttr = MapUtils.mapAttr;
 
 type ComponentProps = {
     allLocations?: Location[];
@@ -49,16 +51,6 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         isLoading: true
     };
 
-    readonly CUSTOMTYPEURLS = {
-        openStreetMap: `//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`,
-        mapbox: `//api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${this.props.mapBoxAccessToken}`
-    };
-
-    readonly MAPATTRIBUTIONS = {
-        openStreetMapAttr: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`,
-        mapboxAttr: `Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>`
-    };
-
     render() {
         return createElement("div",
             {
@@ -80,7 +72,6 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     componentWillReceiveProps(newProps: LeafletMapProps) {
         if (newProps) {
             this.setDefaultCenter(newProps);
-            this.setState({ locations: newProps.allLocations });
         }
     }
 
@@ -90,16 +81,17 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 scrollWheelZoom: this.props.optionScroll,
                 zoomControl: this.props.optionZoomControl,
                 attributionControl: this.props.attributionControl,
+                zoom: this.props.zoomLevel,
                 minZoom: 2,
                 maxZoom: 20,
                 dragging: this.props.optionDrag
             });
-            this.map.addLayer(this.setLayer());
         }
     }
 
     componentDidUpdate(prevProps: LeafletMapProps, prevState: LeafletMapState) {
-        if (this.state.locations !== prevState.locations && this.props !== prevProps) {
+        const { locations, center } = this.state;
+        if ((locations !== prevState.locations) || (center !== prevState.center) && this.props !== prevProps) {
             this.renderLeafletMap(this.state.center);
         }
     }
@@ -113,22 +105,23 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     private renderLeafletMap = (coordinates: LatLngLiteral) => {
         if (this.map) {
             this.map.panTo(coordinates);
+            this.map.addLayer(this.setTileLayer());
             this.renderMarkers();
         }
     }
 
-    private setLayer = () => {
+    private setTileLayer = () => {
         if (this.props.mapProvider === "openStreet") {
-            return tileLayer(this.CUSTOMTYPEURLS.openStreetMap, {
-                attribution: this.MAPATTRIBUTIONS.openStreetMapAttr
+            return tileLayer(customUrls.openStreetMap, {
+                attribution: mapAttr.openStreetMapAttr
             });
         } else if (this.props.mapProvider === "mapBox") {
-            return tileLayer(this.CUSTOMTYPEURLS.mapbox, {
-                attribution: this.MAPATTRIBUTIONS.mapboxAttr,
+            return tileLayer(customUrls.mapbox + this.props.mapBoxAccessToken, {
+                attribution: mapAttr.mapboxAttr,
                 id: "mapbox.streets"
             });
         } else {
-            return tileLayer(this.CUSTOMTYPEURLS.openStreetMap);
+            return tileLayer(customUrls.openStreetMap);
         }
     }
 
@@ -163,31 +156,19 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     private setDefaultCenter = (props: LeafletMapProps) => {
         const { allLocations, defaultCenterLatitude, defaultCenterLongitude } = props;
-        this.setZoom(props);
-        if (defaultCenterLatitude && defaultCenterLongitude) {
-            this.setState({
-                center: {
-                    lat: Number(defaultCenterLatitude),
-                    lng: Number(defaultCenterLongitude)
-                }
-            });
-        } else if (allLocations && allLocations.length === 0) {
+        if (allLocations && allLocations.length === 0) {
             this.setState({ center: this.defaultCenterLocation });
-        }
-    }
-
-    private setZoom = (props: LeafletMapProps) => {
-        const { zoomLevel, autoZoom } = props;
-        if (this.map) {
-            let zoom = this.map.getZoom();
-            if (autoZoom) {
-                if ((zoom && zoom < 2) || !zoom) {
-                    zoom = 2;
-                }
-            } else {
-                zoom = zoomLevel;
-            }
-            this.map.setZoom(zoom);
+        } else if (defaultCenterLatitude && defaultCenterLongitude) {
+            this.setState({
+                locations: [
+                    {
+                        latitude: Number(this.props.defaultCenterLatitude),
+                        longitude: Number(this.props.defaultCenterLongitude)
+                    }
+                ]
+            });
+        } else if (allLocations && allLocations.length) {
+            this.setState({ locations: props.allLocations });
         }
     }
 

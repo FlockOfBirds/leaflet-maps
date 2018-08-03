@@ -35,13 +35,6 @@ const widgetConfig = {
                 })
             },
             {
-                test: /\.scss$/,
-                loader: ExtractTextPlugin.extract({
-                    fallback: "style-loader",
-                    use: "css-loader!sass-loader"
-                })
-            },
-            {
                 test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
                 loader: "url-loader"
             }
@@ -66,9 +59,7 @@ const widgetConfig = {
 };
 
 const previewConfig = {
-    entry: {
-        LeafletMaps: `./src/${widgetName}.webmodeler.ts`
-    },
+    entry: `./src/${widgetName}.webmodeler.ts`,
     output: {
         path: path.resolve(__dirname, "dist/tmp"),
         filename: `src/${widgetName}.webmodeler.js`,
@@ -77,34 +68,18 @@ const previewConfig = {
     resolve: {
         extensions: [ ".ts", ".js" ]
     },
-    devtool: "eval",
+    devtool: "inline-source-map",
     mode: "development",
     module: {
-        rules: [ {
-                test: /\.ts$/,
-                loader: "ts-loader",
-                options: {
-                    compilerOptions: {
-                        "module": "CommonJS",
-                    }
-                }
-            },
-            {
-                test: /\.css$/,
-                use: "raw-loader"
-            },
-            {
-                test: /\.scss$/,
-                use: [ {
-                        loader: "raw-loader"
-                    },
-                    {
-                        loader: "sass-loader"
-                    }
-                ]
-            }
+        rules:
+        [
+            { test: /\.ts$/, loader: "ts-loader" },
+            { test: /\.css$/, use: "raw-loader" }
         ]
     },
+    plugins: [
+        new webpack.LoaderOptionsPlugin({ debug: true })
+    ],
     externals: [ "react", "react-dom" ]
 };
 
