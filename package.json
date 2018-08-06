@@ -8,10 +8,20 @@
     "start": "cross-env NODE_ENV=development grunt",
     "emit": "tsc",
     "pretest": "tsc && npm run lint && npm run build",
-    "test:dev": "cross-env NODE_ENV=development karma start",
-    "test:unit": "cross-env NODE_ENV=development karma start --single-run --codeCoverage && node tests/remap.js",
+    "test": "npm run test:unit && npm run test:conditional",
+    "test:conditional": "node ./node_modules/mendix-widget-build-script/dist/CheckPullRequestFromFork.js && echo 'Skip tests on forked pull request' || npm run deployAndTest",
+    "test:dev": "karma start",
+    "test:unit": "karma start --single-run --codeCoverage && node tests/remap.js",
+    "test:e2e": "tsc -p ./tests/e2e/tsconfig.json && wdio ./tests/e2e/wdio.conf.js",
+    "test:e2e:dev": "tsc -p ./tests/e2e/tsconfig.json && set DEBUG=true&& wdio ./tests/e2e/wdio.conf.js",
+    "test:e2e:dev:mult-browser": "tsc -p ./tests/e2e/tsconfig.json && set DEBUG=true&& set MULTCLIENT=true&& wdio ./tests/e2e/wdio.conf.js",
     "lint": "tslint -c tslint.json '**/*.ts' '**/*.tsx' --exclude '**/node_modules/**'",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "deploy": " npm run updateProject && npm run deployApp",
+    "build": "cross-env NODE_ENV=production grunt release",
+    "updateProject": "node ./node_modules/mendix-widget-build-script/dist/UpdateMxProject.js",
+    "deployApp": "node ./node_modules/mendix-widget-build-script/dist/DeployMxApp.js",
+    "deployAndTest": "npm run deploy && npm run test:e2e"
   },
   "pre-commit": [
     "emit",
