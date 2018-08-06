@@ -83,16 +83,15 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 attributionControl: this.props.attributionControl,
                 zoom: this.props.zoomLevel,
                 minZoom: 2,
-                maxZoom: 20,
                 dragging: this.props.optionDrag
             });
         }
     }
 
     componentDidUpdate(prevProps: LeafletMapProps, prevState: LeafletMapState) {
-        const { locations, center } = this.state;
-        if ((locations !== prevState.locations) || (center !== prevState.center) && this.props !== prevProps) {
-            this.renderLeafletMap(this.state.center);
+        const { locations } = this.state;
+        if (locations !== prevState.locations || this.props.allLocations !== prevProps.allLocations) {
+            this.renderLeafletMap();
         }
     }
 
@@ -102,9 +101,11 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         }
     }
 
-    private renderLeafletMap = (coordinates: LatLngLiteral) => {
+    private renderLeafletMap = () => {
         if (this.map) {
-            this.map.panTo(coordinates);
+            if (this.state.center) {
+                this.map.panTo(this.state.center);
+            }
             this.map.addLayer(this.setTileLayer());
             this.renderMarkers();
         }
@@ -143,7 +144,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                                     : undefined)
                         .then(map =>
                                 map
-                                ? map.fitBounds(this.markerGroup.getBounds()).setMaxZoom(15)
+                                ? map.fitBounds(this.markerGroup.getBounds())
                                 : undefined) // Custom zoom won't work for multiple locations
                         .catch(reason =>
                                 this.setState({ alertMessage: `${reason}` }))
@@ -156,18 +157,20 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     private setDefaultCenter = (props: LeafletMapProps) => {
         const { allLocations, defaultCenterLatitude, defaultCenterLongitude } = props;
-        if (allLocations && allLocations.length === 0) {
-            this.setState({ center: this.defaultCenterLocation });
+        if (!(allLocations && allLocations.length)) {
+            this.setState({
+                center: this.defaultCenterLocation,
+                locations: []
+            });
         } else if (defaultCenterLatitude && defaultCenterLongitude) {
             this.setState({
-                locations: [
-                    {
-                        latitude: Number(this.props.defaultCenterLatitude),
-                        longitude: Number(this.props.defaultCenterLongitude)
-                    }
-                ]
+                center: {
+                    lat: Number(defaultCenterLatitude),
+                    lng: Number(props.defaultCenterLongitude)
+                },
+                locations: []
             });
-        } else if (allLocations && allLocations.length) {
+        } else if (props.allLocations && props.allLocations.length) {
             this.setState({ locations: props.allLocations });
         }
     }
