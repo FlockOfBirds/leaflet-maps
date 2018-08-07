@@ -16,7 +16,6 @@
                 <enumerationValue key="XPath">Database</enumerationValue>
                 <enumerationValue key="microflow">Microflow</enumerationValue>
                 <enumerationValue key="static">Static</enumerationValue>
-                <enumerationValue key="nanoflow">Nanoflow</enumerationValue>
             </enumerationValues>
         </property>
         <property key="locations" type="object" isList="true" required="false">
@@ -54,12 +53,6 @@
                     <caption>Microflow</caption>
                     <category>Database / Microflow</category>
                     <description>The 'Datasource' 'Microflow' that returns the list of locations</description>
-                    <returnType type="Object" entityProperty="locationsEntity" isList="true"/>
-                </property>
-                <property key="dataSourceNanoflow" type="nanoflow" required="false">
-                    <caption>Nanoflow</caption>
-                    <category>Database / Microflow</category>
-                    <description>The 'Datasource' 'nanoflow' that returns the list of locations</description>
                     <returnType type="Object" entityProperty="locationsEntity" isList="true"/>
                 </property>
                 <property key="staticLatitude" type="string" required="false">

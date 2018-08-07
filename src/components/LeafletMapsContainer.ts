@@ -2,7 +2,7 @@ import { Component, createElement } from "react";
 
 import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/ContainerUtils";
-import { fetchData, fetchMarkerObjectUrl } from "./Utils/Data";
+import { fetchData, fetchMarkerObjectUrl, validateLocationProps } from "./Utils/Data";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 import parseStaticLocations = Container.parseStaticLocations;
 import Location = Container.Location;
@@ -40,9 +40,14 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     }
 
     componentWillReceiveProps(nextProps: LeafletMapsContainerProps) {
+        const validationMessage = validateLocationProps(nextProps);
         if (nextProps && nextProps.mxObject) {
-            this.resetSubscriptions(nextProps.mxObject);
-            this.fetchData(nextProps.mxObject);
+            if (validationMessage) {
+                this.setState({ alertMessage: validationMessage });
+            } else {
+                this.resetSubscriptions(nextProps.mxObject);
+                this.fetchData(nextProps.mxObject);
+            }
         } else {
             this.setState({
                 locations: [],
@@ -101,8 +106,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                     type: dataSourceType,
                     entity: locations.locationsEntity,
                     constraint: locations.entityConstraint,
-                    microflow: locations.dataSourceMicroflow,
-                    nanoflow: locations.dataSourceNanoflow
+                    microflow: locations.dataSourceMicroflow
                 })
                 .then(this.setLocationsFromMxObjects)
                 .catch(reason => {

@@ -136,18 +136,15 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                             this.markerGroup.addLayer(
                                 marker.on("click", event =>
                                     this.markerOnClick(event))
-                                ))
+                            ))
                         .then(layer =>
-                                this.map
-                                    ? this.map.addLayer(layer)
-                                    : undefined)
-                        .then(map =>
-                                map
-                                ? map.fitBounds(this.markerGroup.getBounds())
-                                : undefined) // uses bounds zoom for multiple locations
+                            this.map
+                                ? this.map.addLayer(layer)
+                                : undefined)
                         .catch(reason =>
-                                this.setState({ alertMessage: `${reason}` }))
+                            this.setState({ alertMessage: `${reason}` }))
                 );
+                setTimeout(() => (this.map ? this.map.fitBounds(this.markerGroup.getBounds()).invalidateSize() : undefined), 0);
             } else if (this.map) {
                 this.map.removeLayer(this.markerGroup);
             }
@@ -209,10 +206,10 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             && !(lat === 0 && lng === 0);
     }
 
-    private markerOnClick = (e: LeafletEvent) => {
+    private markerOnClick = (event: LeafletEvent) => {
         const { onClickAction, allLocations } = this.props;
         if (onClickAction && allLocations) {
-            onClickAction(allLocations[allLocations.findIndex(targetLoc => targetLoc.latitude === e.target.getLatLng().lat)]);
+            onClickAction(allLocations[allLocations.findIndex(targetLoc => targetLoc.latitude === event.target.getLatLng().lat)]);
         }
     }
 }

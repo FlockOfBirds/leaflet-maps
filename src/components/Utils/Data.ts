@@ -2,20 +2,37 @@ import { Container, Data } from "./ContainerUtils";
 
 type MxObject = mendix.lib.MxObject;
 
-export const validateLocationProps = <T extends Partial<Container.LeafletMapsContainerProps>> (locationData: T) => {
-    const { locations, dataSourceType } = locationData;
+export const validateLocationProps = <T extends Partial<Container.LeafletMapsContainerProps>> (locationData: T): string => {
+    const { locations, dataSourceType, zoomLevel, autoZoom, mapBoxAccessToken, mapProvider } = locationData;
     const errorMessage: string[] = [];
     if (locations && locations.length) {
-        if (locations.length > 1) {
-            errorMessage.push("T");
+        if ((locations.length > 1) && dataSourceType !== "static") {
+            errorMessage.push("There should only be one location");
         } else {
+            if (!autoZoom && (zoomLevel && zoomLevel < 2)) {
+                errorMessage.push("Zoom Level should be greater than one");
+            }
             locations.forEach(location => {
-                if (dataSourceType === "context" && !location.locationsEntity && !location.latitudeAttribute && !location.longitudeAttribute) {
-                    // errorMessage.push()
+                if (dataSourceType && dataSourceType !== "static") {
+                    if (!(location.latitudeAttribute && location.longitudeAttribute)) {
+                        errorMessage.push(`The Latitude attribute and longitude attribute are required for data source ${dataSourceType}`);
+                    }
+                } else if (!(location.staticLatitude && location.staticLongitude)) {
+                        errorMessage.push(`Invalid static locations. Latitude and longitude are required`);
+                }
+                if (dataSourceType === "microflow") {
+                    if (!location.dataSourceMicroflow) {
+                        errorMessage.push(`A Microflow is required for Data source Microflow`);
+                    }
+                }
+                if (mapProvider === "mapBox" && !mapBoxAccessToken) {
+                    errorMessage.push(`A Mapbox token is reaquired`);
                 }
             });
         }
     }
+
+    return errorMessage.join(", ");
 };
 
 export const fetchData = (options: Data.FetchDataOptions): Promise<MxObject[]> =>
@@ -34,10 +51,6 @@ export const fetchData = (options: Data.FetchDataOptions): Promise<MxObject[]> =
                 fetchByMicroflow(options.microflow, guid)
                     .then(mxObjects => resolve(mxObjects))
                     .catch(message => reject({ message }));
-            } else if (options.type === "nanoflow" && options.nanoflow.nanoflow && options.mxform) {
-                fetchByNanoflow(options.nanoflow, options.mxform)
-                .then(mxObjects => resolve(mxObjects))
-                .catch(message => reject({ message }));
             }
         } else {
             reject("entity & guid are required");
@@ -67,18 +80,6 @@ const fetchByMicroflow = (actionname: string, guid: string): Promise<MxObject[]>
             },
             callback: (mxObjects: MxObject[]) => resolve(mxObjects),
             error: error => reject(`An error occurred while retrieving data via microflow: ${actionname}: ${error.message}`)
-        });
-    });
-
-const fetchByNanoflow = (actionname: Data.Nanoflow, mxform: mxui.lib.form._FormBase): Promise<MxObject[]> =>
-    new Promise((resolve, reject) => {
-        const context = new mendix.lib.MxContext();
-        window.mx.data.callNanoflow({
-            nanoflow: actionname,
-            origin: mxform,
-            context,
-            callback: (mxObjects: MxObject[]) => resolve(mxObjects),
-            error: error => reject(`An error occurred while retrieving data via nanoflow: ${actionname}: ${error.message}`)
         });
     });
 
