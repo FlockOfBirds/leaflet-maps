@@ -2,6 +2,22 @@ import { Container, Data } from "./ContainerUtils";
 
 type MxObject = mendix.lib.MxObject;
 
+export const validateLocationProps = <T extends Partial<Container.LeafletMapsContainerProps>> (locationData: T) => {
+    const { locations, dataSourceType } = locationData;
+    const errorMessage: string[] = [];
+    if (locations && locations.length) {
+        if (locations.length > 1) {
+            errorMessage.push("T");
+        } else {
+            locations.forEach(location => {
+                if (dataSourceType === "context" && !location.locationsEntity && !location.latitudeAttribute && !location.longitudeAttribute) {
+                    // errorMessage.push()
+                }
+            });
+        }
+    }
+};
+
 export const fetchData = (options: Data.FetchDataOptions): Promise<MxObject[]> =>
     new Promise<MxObject[]>((resolve, reject) => {
         const { guid, entity } = options;

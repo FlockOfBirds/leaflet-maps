@@ -83,16 +83,14 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 attributionControl: this.props.attributionControl,
                 zoom: this.props.zoomLevel,
                 minZoom: 2,
-                maxZoom: 20,
                 dragging: this.props.optionDrag
             });
         }
     }
 
     componentDidUpdate(prevProps: LeafletMapProps, prevState: LeafletMapState) {
-        const { locations, center } = this.state;
-        if ((locations !== prevState.locations) || (center !== prevState.center) && this.props !== prevProps) {
-            this.renderLeafletMap(this.state.center);
+        if (this.state.locations !== prevState.locations || this.props.allLocations !== prevProps.allLocations) {
+            this.renderLeafletMap();
         }
     }
 
@@ -102,9 +100,11 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         }
     }
 
-    private renderLeafletMap = (coordinates: LatLngLiteral) => {
+    private renderLeafletMap = () => {
         if (this.map) {
-            this.map.panTo(coordinates);
+            if (this.state.center) {
+                this.map.panTo(this.state.center);
+            }
             this.map.addLayer(this.setTileLayer());
             this.renderMarkers();
         }
@@ -143,8 +143,8 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                                     : undefined)
                         .then(map =>
                                 map
-                                ? map.fitBounds(this.markerGroup.getBounds()).setMaxZoom(15)
-                                : undefined) // Custom zoom won't work for multiple locations
+                                ? map.fitBounds(this.markerGroup.getBounds())
+                                : undefined) // uses bounds zoom for multiple locations
                         .catch(reason =>
                                 this.setState({ alertMessage: `${reason}` }))
                 );
@@ -156,18 +156,19 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     private setDefaultCenter = (props: LeafletMapProps) => {
         const { allLocations, defaultCenterLatitude, defaultCenterLongitude } = props;
-        if (allLocations && allLocations.length === 0) {
-            this.setState({ center: this.defaultCenterLocation });
+        if (!(allLocations && allLocations.length)) {
+            this.setState({
+                center: this.defaultCenterLocation,
+                locations: allLocations
+            });
         } else if (defaultCenterLatitude && defaultCenterLongitude) {
             this.setState({
-                locations: [
-                    {
-                        latitude: Number(this.props.defaultCenterLatitude),
-                        longitude: Number(this.props.defaultCenterLongitude)
-                    }
-                ]
+                locations: [ {
+                    latitude: Number(defaultCenterLatitude),
+                    longitude: Number(props.defaultCenterLongitude)
+                } ]
             });
-        } else if (allLocations && allLocations.length) {
+        } else if (props.allLocations && props.allLocations.length) {
             this.setState({ locations: props.allLocations });
         }
     }
@@ -176,7 +177,6 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         new Promise((resolve, reject) => {
             const { latitude, longitude, url } = location;
             if (this.validLocation(location)) {
-                this.setState({ alertMessage: "" });
                 if (url) {
                     resolve(
                         new Marker([
@@ -185,7 +185,8 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                         ]).setIcon(icon({
                             iconUrl: url,
                             iconSize: [ 38, 95 ],
-                            iconAnchor: [ 22, 94 ]
+                            iconAnchor: [ 22, 94 ],
+                            className: "marker"
                         }))
                     );
                 } else {

@@ -2,6 +2,6 @@ import { Client, Element, RawResult } from "webdriverio";
 
 export class BasePage {
     public get markers(): Client<RawResult<Element[]>> & RawResult<Element[]> {
-        return browser.elements(".mx-name-leafletMaps1 > leaflet-pane.leaflet-marker-pane > img");
+        return browser.elements(".leaflet-marker-icon.leaflet-zoom-animated.leaflet-interactive");
     }
 }

@@ -8,8 +8,8 @@ class XpathPage extends BasePage {
         return browser.element(`.mx-name-grid${gridNumber}`);
     }
 
-    public getGridRow(gridNumber: number, rowNumber: number): Client<RawResult<Element>> & RawResult<Element> {
-        return browser.element(`.mx-name-grid${gridNumber} .mx-name-index-${rowNumber}`);
+    public getGridRow(rowNumber: number): Client<RawResult<Element>> & RawResult<Element> {
+        return browser.element(`.mx-name-index-${rowNumber}`);
     }
 
     public open(): void {
