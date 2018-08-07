@@ -89,8 +89,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     componentDidUpdate(prevProps: LeafletMapProps, prevState: LeafletMapState) {
-        const { locations } = this.state;
-        if (locations !== prevState.locations || this.props.allLocations !== prevProps.allLocations) {
+        if (this.state.locations !== prevState.locations || this.props.allLocations !== prevProps.allLocations) {
             this.renderLeafletMap();
         }
     }
@@ -145,7 +144,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                         .then(map =>
                                 map
                                 ? map.fitBounds(this.markerGroup.getBounds())
-                                : undefined) // Custom zoom won't work for multiple locations
+                                : undefined) // uses bounds zoom for multiple locations
                         .catch(reason =>
                                 this.setState({ alertMessage: `${reason}` }))
                 );
@@ -160,15 +159,14 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         if (!(allLocations && allLocations.length)) {
             this.setState({
                 center: this.defaultCenterLocation,
-                locations: []
+                locations: allLocations
             });
         } else if (defaultCenterLatitude && defaultCenterLongitude) {
             this.setState({
-                center: {
-                    lat: Number(defaultCenterLatitude),
-                    lng: Number(props.defaultCenterLongitude)
-                },
-                locations: []
+                locations: [ {
+                    latitude: Number(defaultCenterLatitude),
+                    longitude: Number(props.defaultCenterLongitude)
+                } ]
             });
         } else if (props.allLocations && props.allLocations.length) {
             this.setState({ locations: props.allLocations });
@@ -179,7 +177,6 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         new Promise((resolve, reject) => {
             const { latitude, longitude, url } = location;
             if (this.validLocation(location)) {
-                this.setState({ alertMessage: "" });
                 if (url) {
                     resolve(
                         new Marker([
@@ -188,7 +185,8 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                         ]).setIcon(icon({
                             iconUrl: url,
                             iconSize: [ 38, 95 ],
-                            iconAnchor: [ 22, 94 ]
+                            iconAnchor: [ 22, 94 ],
+                            className: "marker"
                         }))
                     );
                 } else {

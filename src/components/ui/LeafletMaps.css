@@ -15,3 +15,7 @@
     float: none;
     z-index: 2;
 }
+
+.widget-leaflet-maps .marker {
+    cursor: pointer;
+}
