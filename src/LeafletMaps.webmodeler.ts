@@ -1,13 +1,19 @@
 import { Component, createElement } from "react";
 import { LeafletMap } from "./components/LeafletMap";
+import { validateLocationProps } from "./components/Utils/Data";
 import { Container } from "./components/Utils/ContainerUtils";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 
 // tslint:disable-next-line:class-name
 export class preview extends Component<LeafletMapsContainerProps> {
+
     render() {
+        const validationMessage = validateLocationProps(this.props);
+
         return createElement(LeafletMap, {
             allLocations: [ preview.createSampleLocations() ],
+            alertMessage: validationMessage,
+            fetchingData: false,
             ...this.props as LeafletMapsContainerProps
         });
     }

@@ -19,6 +19,7 @@ export interface LeafletMapsContainerState {
     alertMessage?: string;
     locations: Location[];
     markerImageUrl: string;
+    isFetchingData?: boolean;
 }
 
 export default class LeafletMapsContainer extends Component<LeafletMapsContainerProps, LeafletMapsContainerState> {
@@ -26,7 +27,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     readonly state: LeafletMapsContainerState = {
         alertMessage: "",
         locations: [],
-        markerImageUrl: ""
+        markerImageUrl: "",
+        isFetchingData: false
     };
 
     render() {
@@ -35,6 +37,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             className: this.props.class,
             alertMessage: this.state.alertMessage,
             onClickAction: this.executeAction,
+            fetchingData: this.state.isFetchingData,
             ...this.props as LeafletMapsContainerProps
         });
     }
@@ -96,8 +99,9 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         const guid = contextObject ? contextObject.getGuid() : "";
         const { dataSourceType } = this.props;
         this.props.locations.map(locations => {
+            this.setState({ isFetchingData: true });
             if (this.props.dataSourceType === "static") {
-                parseStaticLocations(this.props).then(results => this.setState({ locations: results }));
+                parseStaticLocations(this.props).then(results => this.setState({ locations: results, isFetchingData: false }));
             } else if (this.props.dataSourceType === "context" && contextObject) {
                 this.setLocationsFromMxObjects([ contextObject ]);
             } else {
@@ -141,7 +145,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             });
 
             Promise.all(locations).then(results => {
-                this.setState({ locations: results });
+                this.setState({ locations: results, isFetchingData: false });
             });
 
         });

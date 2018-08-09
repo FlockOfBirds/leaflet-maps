@@ -25,6 +25,7 @@ type ComponentProps = {
     allLocations?: Location[];
     className?: string;
     alertMessage?: string;
+    fetchingData?: boolean;
     onClickAction?: (location: Location) => void;
 } & LeafletMapsContainerProps;
 
@@ -34,7 +35,6 @@ export interface LeafletMapState {
     center: LatLngLiteral;
     alertMessage?: string;
     locations?: Location[];
-    isLoading?: boolean;
 }
 
 export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
@@ -45,34 +45,31 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     private markerGroup = new FeatureGroup();
 
     readonly state: LeafletMapState = {
-        center: { lat: 0, lng: 0 },
+        center: this.defaultCenterLocation,
         alertMessage: "",
-        locations: [],
-        isLoading: true
+        locations: []
     };
 
     render() {
-        return createElement("div",
-            {
-                className: classNames("widget-leaflet-maps-wrapper", this.props.className),
-                style: { ...getDimensions(this.props), ...parseStyle(this.props.style) }
-            },
+        return createElement("div", {},
             createElement(Alert, {
                 bootstrapStyle: "danger",
                 className: "widget-leaflet-maps-alert leaflet-control",
                 message: this.state.alertMessage || this.props.alertMessage
-            }),
-            createElement("div", {
-                className: "widget-leaflet-maps",
-                ref: (leafletNode?: HTMLDivElement) => this.leafletNode = leafletNode
-            }
-        ));
+            }), createElement("div",
+                {
+                    className: classNames("widget-leaflet-maps-wrapper", this.props.className),
+                    style: { ...getDimensions(this.props), ...parseStyle(this.props.style) }
+                },
+                createElement("div", {
+                    className: "widget-leaflet-maps",
+                    ref: (leafletNode?: HTMLDivElement) => this.leafletNode = leafletNode
+                }
+                )));
     }
 
     componentWillReceiveProps(newProps: LeafletMapProps) {
-        if (newProps) {
-            this.setDefaultCenter(newProps);
-        }
+        this.setDefaultCenter(newProps);
     }
 
     componentDidMount() {
@@ -84,29 +81,19 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 zoom: this.props.zoomLevel,
                 minZoom: 2,
                 dragging: this.props.optionDrag
-            });
+            }).addLayer(this.setTileLayer());
         }
     }
 
-    componentDidUpdate(prevProps: LeafletMapProps, prevState: LeafletMapState) {
-        if (this.state.locations !== prevState.locations || this.props.allLocations !== prevProps.allLocations) {
-            this.renderLeafletMap();
+    componentDidUpdate() {
+        if (this.map && !this.props.fetchingData) {
+            this.map.panTo(this.state.center);
         }
     }
 
     componentWillUnmount() {
         if (this.map) {
             this.map.remove();
-        }
-    }
-
-    private renderLeafletMap = () => {
-        if (this.map) {
-            if (this.state.center) {
-                this.map.panTo(this.state.center);
-            }
-            this.map.addLayer(this.setTileLayer());
-            this.renderMarkers();
         }
     }
 
@@ -125,17 +112,29 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         }
     }
 
-    private renderMarkers = () => {
-        const { locations } = this.state;
+    private setDefaultCenter = (props: LeafletMapProps) => {
+        const { defaultCenterLatitude, defaultCenterLongitude } = props;
+        if (defaultCenterLatitude && defaultCenterLongitude) {
+            this.setState({
+                center: {
+                    lat: Number(defaultCenterLatitude),
+                    lng: Number(props.defaultCenterLongitude)
+                }
+            });
+        } else if (!props.fetchingData) {
+            this.renderMarkers(props.allLocations);
+        }
+    }
+
+    private renderMarkers = <T extends Location>(locations?: T[]) => {
         if (this.markerGroup) {
             this.markerGroup.clearLayers();
             if (locations && locations.length) {
                 locations.forEach(location =>
                     this.createMarker(location)
                         .then(marker =>
-                            this.markerGroup.addLayer(
-                                marker.on("click", event =>
-                                    this.markerOnClick(event))
+                            this.markerGroup.addLayer(marker
+                                .on("click", event => this.markerOnClick(event))
                             ))
                         .then(layer =>
                             this.map
@@ -151,26 +150,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         }
     }
 
-    private setDefaultCenter = (props: LeafletMapProps) => {
-        const { allLocations, defaultCenterLatitude, defaultCenterLongitude } = props;
-        if (!(allLocations && allLocations.length)) {
-            this.setState({
-                center: this.defaultCenterLocation,
-                locations: allLocations
-            });
-        } else if (defaultCenterLatitude && defaultCenterLongitude) {
-            this.setState({
-                locations: [ {
-                    latitude: Number(defaultCenterLatitude),
-                    longitude: Number(props.defaultCenterLongitude)
-                } ]
-            });
-        } else if (props.allLocations && props.allLocations.length) {
-            this.setState({ locations: props.allLocations });
-        }
-    }
-
-    private createMarker = (location: Location): Promise<Marker> =>
+    private createMarker = <T extends Location>(location: T): Promise<Marker> =>
         new Promise((resolve, reject) => {
             const { latitude, longitude, url } = location;
             if (this.validLocation(location)) {
