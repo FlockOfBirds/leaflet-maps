@@ -4,6 +4,10 @@ import { validateLocationProps } from "./components/Utils/Data";
 import { Container } from "./components/Utils/ContainerUtils";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 
+type VisibilityMap<T> = {
+    [P in keyof T]: any;
+};
+
 // tslint:disable-next-line:class-name
 export class preview extends Component<LeafletMapsContainerProps> {
 
@@ -34,4 +38,35 @@ export function getPreviewCss() {
         require("leaflet-defaulticon-compatibility") +
         require("./components/ui/LeafletMaps.css")
     );
+}
+
+export function getVisibleProperties(valueMap: LeafletMapsContainerProps, visibilityMap: VisibilityMap<LeafletMapsContainerProps>) {
+    if (valueMap.locations && Array.isArray(valueMap.locations)) {
+        valueMap.locations.forEach((location, index) => {
+            if (valueMap.dataSourceType) {
+                if (valueMap.dataSourceType === "XPath" || "static") {
+                    visibilityMap.locations[index].dataSourceMicroflow = false;
+                }
+                if (valueMap.dataSourceType === "microflow" || "XPath" || "context") {
+                    visibilityMap.locations[index].staticLatitude = false;
+                    visibilityMap.locations[index].staticLongitude = false;
+                }
+                if (valueMap.dataSourceType === "context" || "microflow" || "static") {
+                    visibilityMap.locations[index].entityConstraint = false;
+                }
+                if (valueMap.dataSourceType === "static") {
+                    visibilityMap.locations[index].locationsEntity = false;
+                    visibilityMap.locations[index].latitudeAttribute = false;
+                    visibilityMap.locations[index].longitudeAttribute = false;
+                }
+            }
+            visibilityMap.mapBoxAccessToken = valueMap.mapProvider === "mapBox";
+            visibilityMap.locations[index].staticMarkerIcon = location.markerImage === "staticImage";
+            visibilityMap.locations[index].onClickMicroflow = location.onClickEvent === "callMicroflow";
+            visibilityMap.locations[index].onClickNanoflow = location.onClickEvent === "callNanoflow";
+            visibilityMap.locations[index].page = location.onClickEvent === "showPage";
+
+            visibilityMap.locations[index].PageLocation = location.onClickEvent === "showPage";
+        });
+    }
 }

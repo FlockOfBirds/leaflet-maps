@@ -34,7 +34,6 @@ export type LeafletMapProps = ComponentProps & Dimensions;
 export interface LeafletMapState {
     center: LatLngLiteral;
     alertMessage?: string;
-    locations?: Location[];
 }
 
 export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
@@ -46,8 +45,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     readonly state: LeafletMapState = {
         center: this.defaultCenterLocation,
-        alertMessage: "",
-        locations: []
+        alertMessage: ""
     };
 
     render() {
@@ -82,6 +80,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 minZoom: 2,
                 dragging: this.props.optionDrag
             }).addLayer(this.setTileLayer());
+
         }
     }
 
