@@ -142,10 +142,20 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                         .catch(reason =>
                             this.setState({ alertMessage: `${reason}` }))
                 );
-                setTimeout(() => (this.map ? this.map.fitBounds(this.markerGroup.getBounds()).invalidateSize() : undefined), 0);
+                setTimeout(() => this.setBounds(this.markerGroup), 0);
             } else if (this.map) {
                 this.map.removeLayer(this.markerGroup);
             }
+        }
+    }
+
+    private setBounds = (markerGroup: FeatureGroup) => {
+        try {
+            if (this.map) {
+                this.map.fitBounds(markerGroup.getBounds()).invalidateSize();
+            }
+        } catch (error) {
+            this.setState({ alertMessage: `Failed because ` + error.message });
         }
     }
 

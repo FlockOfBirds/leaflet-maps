@@ -43,18 +43,18 @@ export function getPreviewCss() {
 export function getVisibleProperties(valueMap: LeafletMapsContainerProps, visibilityMap: VisibilityMap<LeafletMapsContainerProps>) {
     if (valueMap.locations && Array.isArray(valueMap.locations)) {
         valueMap.locations.forEach((location, index) => {
-            if (valueMap.dataSourceType) {
-                if (valueMap.dataSourceType === "XPath" || "static") {
+            if (location.dataSourceType) {
+                if (location.dataSourceType === "XPath" || "static") {
                     visibilityMap.locations[index].dataSourceMicroflow = false;
                 }
-                if (valueMap.dataSourceType === "microflow" || "XPath" || "context") {
+                if (location.dataSourceType === "microflow" || "XPath" || "context") {
                     visibilityMap.locations[index].staticLatitude = false;
                     visibilityMap.locations[index].staticLongitude = false;
                 }
-                if (valueMap.dataSourceType === "context" || "microflow" || "static") {
+                if (location.dataSourceType === "context" || "microflow" || "static") {
                     visibilityMap.locations[index].entityConstraint = false;
                 }
-                if (valueMap.dataSourceType === "static") {
+                if (location.dataSourceType === "static") {
                     visibilityMap.locations[index].locationsEntity = false;
                     visibilityMap.locations[index].latitudeAttribute = false;
                     visibilityMap.locations[index].longitudeAttribute = false;

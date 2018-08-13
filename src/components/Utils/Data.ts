@@ -3,33 +3,29 @@ import { Container, Data } from "./ContainerUtils";
 type MxObject = mendix.lib.MxObject;
 
 export const validateLocationProps = <T extends Partial<Container.LeafletMapsContainerProps>> (locationData: T): string => {
-    const { locations, dataSourceType, zoomLevel, autoZoom, mapBoxAccessToken, mapProvider } = locationData;
+    const { locations, zoomLevel, autoZoom, mapBoxAccessToken, mapProvider } = locationData;
     const errorMessage: string[] = [];
+    if (!autoZoom && (zoomLevel && zoomLevel < 2)) {
+        errorMessage.push("Zoom Level should be greater than one");
+    }
     if (locations && locations.length) {
-        if ((locations.length > 1) && dataSourceType !== "static") {
-            errorMessage.push("There should only be one location");
-        } else {
-            if (!autoZoom && (zoomLevel && zoomLevel < 2)) {
-                errorMessage.push("Zoom Level should be greater than one");
+        locations.forEach(location => {
+            if (location.dataSourceType && location.dataSourceType !== "static") {
+                if (!(location.latitudeAttribute && location.longitudeAttribute)) {
+                    errorMessage.push(`The Latitude attribute and longitude attribute are required for data source ${location.dataSourceType}`);
+                }
+            } else if (!(location.staticLatitude && location.staticLongitude)) {
+                errorMessage.push(`Invalid static locations. Latitude and longitude are required`);
             }
-            locations.forEach(location => {
-                if (dataSourceType && dataSourceType !== "static") {
-                    if (!(location.latitudeAttribute && location.longitudeAttribute)) {
-                        errorMessage.push(`The Latitude attribute and longitude attribute are required for data source ${dataSourceType}`);
-                    }
-                } else if (!(location.staticLatitude && location.staticLongitude)) {
-                        errorMessage.push(`Invalid static locations. Latitude and longitude are required`);
+            if (location.dataSourceType === "microflow") {
+                if (!location.dataSourceMicroflow) {
+                    errorMessage.push(`A Microflow is required for Data source Microflow`);
                 }
-                if (dataSourceType === "microflow") {
-                    if (!location.dataSourceMicroflow) {
-                        errorMessage.push(`A Microflow is required for Data source Microflow`);
-                    }
-                }
-                if (mapProvider === "mapBox" && !mapBoxAccessToken) {
-                    errorMessage.push(`A Mapbox token is reaquired`);
-                }
-            });
-        }
+            }
+            if (mapProvider === "mapBox" && !mapBoxAccessToken) {
+                errorMessage.push(`A Mapbox token is reaquired`);
+            }
+        });
     }
 
     return errorMessage.join(", ");

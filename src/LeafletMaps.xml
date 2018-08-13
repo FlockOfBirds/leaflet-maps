@@ -7,22 +7,22 @@
     <icon/>
     <properties>
         <!-- Data source -->
-        <property key="dataSourceType" type="enumeration" defaultValue="context">
-            <caption>Data source</caption>
-            <category>Data source</category>
-            <description/>
-            <enumerationValues>
-                <enumerationValue key="context">Context</enumerationValue>
-                <enumerationValue key="XPath">Database</enumerationValue>
-                <enumerationValue key="microflow">Microflow</enumerationValue>
-                <enumerationValue key="static">Static</enumerationValue>
-            </enumerationValues>
-        </property>
         <property key="locations" type="object" isList="true" required="false">
             <caption>Locations</caption>
             <category>Data source</category>
             <description/>
             <properties>
+                <property key="dataSourceType" type="enumeration" defaultValue="context">
+                    <caption>Data source</caption>
+                    <category>Database / Microflow</category>
+                    <description/>
+                    <enumerationValues>
+                        <enumerationValue key="context">Context</enumerationValue>
+                        <enumerationValue key="XPath">Database</enumerationValue>
+                        <enumerationValue key="microflow">Microflow</enumerationValue>
+                        <enumerationValue key="static">Static</enumerationValue>
+                    </enumerationValues>
+                </property>
                 <property key="locationsEntity" type="entity" required="false">
                     <caption>Locations entity</caption>
                     <category>Database / Microflow</category>

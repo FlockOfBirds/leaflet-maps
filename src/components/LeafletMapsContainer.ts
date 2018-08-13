@@ -43,12 +43,12 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     }
 
     componentWillReceiveProps(nextProps: LeafletMapsContainerProps) {
+        this.resetSubscriptions(nextProps.mxObject);
         const validationMessage = validateLocationProps(nextProps);
         if (nextProps && nextProps.mxObject) {
             if (validationMessage) {
                 this.setState({ alertMessage: validationMessage });
             } else {
-                this.resetSubscriptions(nextProps.mxObject);
                 this.fetchData(nextProps.mxObject);
             }
         } else {
@@ -97,17 +97,17 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
         const guid = contextObject ? contextObject.getGuid() : "";
-        const { dataSourceType } = this.props;
+        // const { dataSourceType } = this.props;
         this.props.locations.map(locations => {
             this.setState({ isFetchingData: true });
-            if (this.props.dataSourceType === "static") {
+            if (locations.dataSourceType === "static") {
                 parseStaticLocations(this.props).then(results => this.setState({ locations: results, isFetchingData: false }));
-            } else if (this.props.dataSourceType === "context" && contextObject) {
+            } else if (locations.dataSourceType === "context" && contextObject) {
                 this.setLocationsFromMxObjects([ contextObject ]);
             } else {
                 fetchData({
                     guid,
-                    type: dataSourceType,
+                    type: locations.dataSourceType,
                     entity: locations.locationsEntity,
                     constraint: locations.entityConstraint,
                     microflow: locations.dataSourceMicroflow

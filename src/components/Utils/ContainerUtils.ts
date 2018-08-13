@@ -15,12 +15,12 @@ export namespace Container {
 
     export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, DefaultLocations, MapControlOptions {
         mapProvider?: mapProviders;
-        dataSourceType: DataSource;
         mapBoxAccessToken?: string;
         locations: DataSourceLocationProps[];
     }
 
     export interface DataSourceLocationProps extends DatabaseLocationProps, StaticLocationProps, MarkerIconProps, MarkerEvents {
+        dataSourceType: DataSource;
         locationsEntity?: string;
         entityConstraint?: string;
         dataSourceMicroflow?: string;
