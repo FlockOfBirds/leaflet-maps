@@ -77,6 +77,9 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 attributionControl: this.props.attributionControl,
                 zoom: this.props.zoomLevel,
                 minZoom: 2,
+                // Work around for page scroll down to botom on first click on map in Chrome and IE
+                // https://github.com/Leaflet/Leaflet/issues/5392
+                keyboard: false,
                 dragging: this.props.optionDrag
             }).addLayer(this.setTileLayer());
 

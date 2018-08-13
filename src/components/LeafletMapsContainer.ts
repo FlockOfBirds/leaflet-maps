@@ -9,7 +9,7 @@ import Location = Container.Location;
 
 import "leaflet/dist/leaflet.css";
 // Re-uses images from ~leaflet package
-// Use workarount for marker icon, that is not standard compatible with webpack
+// Use workaround for marker icon, that is not standard compatible with webpack
 // https://github.com/ghybs/leaflet-defaulticon-compatibility#readme
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
