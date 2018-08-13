@@ -144,17 +144,22 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                         .then(map =>
                             map
                             ? map.fitBounds(this.markerGroup.getBounds()).invalidateSize()
-                            : undefined
-                        )
+                            : undefined)
                         .catch(reason =>
                             this.setState({ alertMessage: `${reason}` }))
                 );
+                this.setZoom();
             } else if (this.map) {
                 this.map.removeLayer(this.markerGroup);
             }
         }
     }
 
+    private setZoom = () => {
+        if (!this.props.autoZoom) {
+            setTimeout(() => this.map ? this.map.setZoom(this.props.zoomLevel) : undefined, 0);
+        }
+    }
     private createMarker = <T extends Location>(location: T): Promise<Marker> =>
         new Promise((resolve, reject) => {
             const { latitude, longitude, url } = location;
