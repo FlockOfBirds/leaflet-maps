@@ -44,17 +44,16 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     private markerGroup = new FeatureGroup();
 
     readonly state: LeafletMapState = {
-        center: this.defaultCenterLocation,
-        alertMessage: ""
+        center: this.defaultCenterLocation
     };
 
     render() {
         return createElement("div", {},
             createElement(Alert, {
                 bootstrapStyle: "danger",
-                className: "widget-leaflet-maps-alert leaflet-control",
-                message: this.state.alertMessage || this.props.alertMessage
-            }), createElement("div",
+                className: "widget-leaflet-maps-alert leaflet-control"
+            }, this.props.alertMessage || this.state.alertMessage),
+            createElement("div",
                 {
                     className: classNames("widget-leaflet-maps-wrapper", this.props.className),
                     style: { ...getDimensions(this.props), ...parseStyle(this.props.style) }
@@ -139,61 +138,44 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                             this.map
                                 ? this.map.addLayer(layer)
                                 : undefined)
+                        .then(map =>
+                            map
+                            ? map.fitBounds(this.markerGroup.getBounds()).invalidateSize()
+                            : undefined
+                        )
                         .catch(reason =>
                             this.setState({ alertMessage: `${reason}` }))
                 );
-                setTimeout(() => this.setBounds(this.markerGroup), 0);
             } else if (this.map) {
                 this.map.removeLayer(this.markerGroup);
             }
         }
     }
 
-    private setBounds = (markerGroup: FeatureGroup) => {
-        try {
-            if (this.map) {
-                this.map.fitBounds(markerGroup.getBounds()).invalidateSize();
-            }
-        } catch (error) {
-            this.setState({ alertMessage: `Failed because ` + error.message });
-        }
-    }
-
     private createMarker = <T extends Location>(location: T): Promise<Marker> =>
         new Promise((resolve, reject) => {
             const { latitude, longitude, url } = location;
-            if (this.validLocation(location)) {
-                if (url) {
-                    resolve(
-                        new Marker([
-                            Number(latitude),
-                            Number(longitude)
-                        ]).setIcon(icon({
-                            iconUrl: url,
-                            iconSize: [ 38, 95 ],
-                            iconAnchor: [ 22, 94 ],
-                            className: "marker"
-                        }))
-                    );
-                } else {
-                    resolve(new Marker([
+            if (url) {
+                resolve(
+                    new Marker([
                         Number(latitude),
                         Number(longitude)
-                    ]));
-                }
-            } else if (!this.validLocation(location)) {
-                reject("Invalid Coordinates were passed");
+                    ]).setIcon(icon({
+                        iconUrl: url,
+                        iconSize: [ 38, 95 ],
+                        iconAnchor: [ 22, 94 ],
+                        className: "marker"
+                    }))
+                );
+            } else if (!url) {
+                resolve(new Marker([
+                    Number(latitude),
+                    Number(longitude)
+                ]));
+            } else {
+                reject("Failed to create Marker");
             }
         })
-
-    private validLocation(location: Location): boolean {
-        const { latitude: lat, longitude: lng } = location;
-
-        return typeof lat === "number" && typeof lng === "number"
-            && lat <= 90 && lat >= -90
-            && lng <= 180 && lng >= -180
-            && !(lat === 0 && lng === 0);
-    }
 
     private markerOnClick = (event: LeafletEvent) => {
         const { onClickAction, allLocations } = this.props;

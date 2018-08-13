@@ -2,7 +2,7 @@ import { Component, createElement } from "react";
 
 import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/ContainerUtils";
-import { fetchData, fetchMarkerObjectUrl, validateLocationProps } from "./Utils/Data";
+import { fetchData, fetchMarkerObjectUrl, validLocation, validateLocationProps } from "./Utils/Data";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 import parseStaticLocations = Container.parseStaticLocations;
 import Location = Container.Location;
@@ -97,7 +97,6 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
         const guid = contextObject ? contextObject.getGuid() : "";
-        // const { dataSourceType } = this.props;
         this.props.locations.map(locations => {
             this.setState({ isFetchingData: true });
             if (locations.dataSourceType === "static") {
@@ -145,7 +144,20 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             });
 
             Promise.all(locations).then(results => {
-                this.setState({ locations: results, isFetchingData: false });
+                // tslint:disable-next-line:prefer-const
+                let locationsArray: Location[] = []; let errorMessage = "";
+                results.forEach(location => {
+                    if (validLocation(location)) {
+                        locationsArray.push(location);
+                    } else if (!validLocation(location)) {
+                        errorMessage = "Failed because invalid coordinates were passed";
+                    }
+                });
+                this.setState({
+                    locations: locationsArray,
+                    isFetchingData: false,
+                    alertMessage: errorMessage
+                });
             });
 
         });
