@@ -2,10 +2,10 @@ import { BasePage } from "./base.page";
 
 class SingleLocationPage extends BasePage {
 
-    public get latitude() {
+    public get latitudeInput() {
         return browser.element(".mx-name-textBox1 input");
     }
-    public get longitude() {
+    public get longitudeInput() {
         return browser.element(".mx-name-textBox2 input");
     }
     public get longitudeLabel() {
