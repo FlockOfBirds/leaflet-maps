@@ -128,38 +128,41 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private renderMarkers = <T extends Location>(locations?: T[]) => {
-        if (this.markerGroup) {
-            this.markerGroup.clearLayers();
-            if (locations && locations.length) {
-                locations.forEach(location =>
-                    this.createMarker(location)
-                        .then(marker =>
-                            this.markerGroup.addLayer(marker
-                                .on("click", event => this.markerOnClick(event))
-                            ))
-                        .then(layer =>
-                            this.map
-                                ? this.map.addLayer(layer)
-                                : undefined)
-                        .then(map =>
-                            map
-                            ? map.fitBounds(this.markerGroup.getBounds()).invalidateSize()
+        this.markerGroup.clearLayers();
+        if (locations && locations.length) {
+            locations.forEach(location =>
+                this.createMarker(location)
+                    .then(marker =>
+                        this.markerGroup.addLayer(marker
+                            .on("click", event => this.markerOnClick(event))
+                        ))
+                    .then(layer =>
+                        this.map
+                            ? this.map.addLayer(layer)
                             : undefined)
-                        .catch(reason =>
-                            this.setState({ alertMessage: `${reason}` }))
-                );
-                this.setZoom();
-            } else if (this.map) {
-                this.map.removeLayer(this.markerGroup);
-            }
+                    .catch(reason =>
+                        this.setState({ alertMessage: `${reason}` })));
+            this.setBounds();
+        } else if (this.map) {
+            this.map.removeLayer(this.markerGroup);
         }
     }
 
-    private setZoom = () => {
-        if (!this.props.autoZoom) {
-            setTimeout(() => this.map ? this.map.setZoom(this.props.zoomLevel) : undefined, 0);
-        }
+    private setBounds = () => {
+        setTimeout(() => {
+            if (this.map) {
+                try {
+                    this.map.fitBounds(this.markerGroup.getBounds()).invalidateSize();
+                } catch (error) {
+                    this.setState({ alertMessage: `Failed due to ${error.message}` });
+                }
+                if (!this.props.autoZoom) {
+                    this.map.setZoom(this.props.zoomLevel);
+                }
+            }
+        }, 0);
     }
+
     private createMarker = <T extends Location>(location: T): Promise<Marker> =>
         new Promise((resolve, reject) => {
             const { latitude, longitude, url } = location;

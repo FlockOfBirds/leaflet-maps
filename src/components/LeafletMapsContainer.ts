@@ -44,8 +44,6 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     }
 
     componentWillReceiveProps(nextProps: LeafletMapsContainerProps) {
-        this.locationsArray = [];
-        this.errorMessage = "";
         this.resetSubscriptions(nextProps.mxObject);
         const validationMessage = validateLocationProps(nextProps);
         if (nextProps && nextProps.mxObject) {
@@ -55,7 +53,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                 this.fetchData(nextProps.mxObject);
             }
         } else {
-            this.setState({ locations: [], alertMessage: "" });
+            this.setState({ locations: [], alertMessage: "", isFetchingData: false });
         }
     }
 
@@ -97,6 +95,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
         const guid = contextObject ? contextObject.getGuid() : "";
+        this.locationsArray = [];
+        this.errorMessage = "";
         this.setState({ isFetchingData: true });
         this.props.locations.forEach(location => {
             if (location.dataSourceType === "static") {
@@ -116,7 +116,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                     microflow: location.dataSourceMicroflow
                 })
                 .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
-                .catch(reason => this.setState({ alertMessage: `Failed because of ${reason}`, locations: [] }));
+                .catch(reason => this.setState({ alertMessage: `Failed because of ${reason}`, locations: [], isFetchingData: false }));
             }
         });
     }
@@ -146,7 +146,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                         alertMessage: this.errorMessage
                     });
                 })
-                .catch(reason => this.setState({ alertMessage: `Failed due to, ${reason}`, locations: [] }))
+                .catch(reason => this.setState({ alertMessage: `Failed due to, ${reason}`, locations: [], isFetchingData: false }))
 
     private executeAction = (markerLocation: Location) => {
         const object = markerLocation.mxObject;
