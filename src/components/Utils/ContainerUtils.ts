@@ -1,7 +1,5 @@
-import { UrlHelper } from "./UrlHelper";
 import { Style } from "./Styles";
 import Dimensions = Style.Dimensions;
-import { fetchMarkerObjectUrl } from "./Data";
 
 export namespace Container {
 
@@ -73,36 +71,6 @@ export namespace Container {
     export type OnClickOptions = "doNothing" | "showPage" | "callMicroflow" | "callNanoflow";
     export type PageLocation = "content" | "popup" | "modal";
     export type mapProviders = "openStreet" | "mapBox";
-
-    export const getStaticMarkerUrl = (staticMarkerIcon: string): string => {
-        if (staticMarkerIcon) {
-            return UrlHelper.getStaticResourceUrl(staticMarkerIcon);
-        } else {
-            return "";
-        }
-    };
-
-    export const parseStaticLocations = (props: LeafletMapsContainerProps) => {
-        const staticlocations = props.locations.map(locations => {
-            const latitude = locations.staticLatitude.trim() !== "" ? Number(locations.staticLatitude) : undefined;
-            const longitude = locations.staticLongitude.trim() !== "" ? Number(locations.staticLongitude) : undefined;
-
-            return fetchMarkerObjectUrl({
-                type: locations.markerImage,
-                markerIcon: locations.staticMarkerIcon
-            })
-                .then((markerUrl: string) => {
-                    return {
-                        latitude: latitude ? Number(latitude) : undefined,
-                        longitude: longitude ? Number(longitude) : undefined,
-                        url: markerUrl
-                    };
-                })
-                .catch(reason => reason);
-        });
-
-        return Promise.all(staticlocations);
-    };
 }
 
 export namespace Data {

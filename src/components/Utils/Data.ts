@@ -1,4 +1,5 @@
 import { Container, Data } from "./ContainerUtils";
+import { UrlHelper } from "./UrlHelper";
 
 type MxObject = mendix.lib.MxObject;
 
@@ -18,8 +19,14 @@ export const validateLocationProps = <T extends Partial<Container.LeafletMapsCon
                     errorMessage.push(`The Latitude attribute and longitude attribute are required for data source
                     ${locations[index].dataSourceType} at location ${index + 1}`);
                 }
-            } else if (!(location.staticLatitude && location.staticLongitude)) {
-                errorMessage.push(`Invalid static locations. Latitude and longitude are required at location ${index + 1}`);
+            } else {
+                if (!(location.staticLatitude && location.staticLongitude)) {
+                    errorMessage.push(`Invalid static locations. Latitude and longitude are required at location ${index + 1}`);
+                }
+                const staticLocation = parseStaticLocations(location);
+                if (!validLocation(staticLocation)) {
+                    errorMessage.push(`Invalid Static Locations passed at location ${index + 1}`);
+                }
             }
             if (location.dataSourceType === "microflow") {
                 if (!location.dataSourceMicroflow) {
@@ -31,6 +38,17 @@ export const validateLocationProps = <T extends Partial<Container.LeafletMapsCon
 
     return errorMessage.join(", ");
 };
+
+export const parseStaticLocations = (staticlocations: Container.DataSourceLocationProps): Container.Location => ({
+    latitude: staticlocations.staticLatitude.trim() !== "" ? Number(staticlocations.staticLatitude) : undefined,
+    longitude: staticlocations.staticLongitude.trim() !== "" ? Number(staticlocations.staticLongitude) : undefined,
+    url: getStaticMarkerUrl(staticlocations.staticMarkerIcon)
+});
+
+export const getStaticMarkerUrl = (staticMarkerIcon: string): string =>
+    staticMarkerIcon
+        ? UrlHelper.getStaticResourceUrl(staticMarkerIcon)
+        : "";
 
 export const validLocation = (location: Container.Location): boolean => {
     const { latitude: lat, longitude: lng } = location;
@@ -93,7 +111,7 @@ export const fetchMarkerObjectUrl = (options: Data.FetchMarkerIcons, mxObject?: 
     new Promise((resolve, reject) => {
         const { type, markerIcon } = options;
         if (type === "staticImage") {
-            resolve(Container.getStaticMarkerUrl(markerIcon));
+            resolve(getStaticMarkerUrl(markerIcon));
         } else if (type === "systemImage" && mxObject) {
             const url = window.mx.data.getDocumentUrl(mxObject.getGuid(), mxObject.get("changedDate") as number);
             window.mx.data.getImageUrl(url,

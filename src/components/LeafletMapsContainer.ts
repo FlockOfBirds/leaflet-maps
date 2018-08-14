@@ -2,9 +2,8 @@ import { Component, createElement } from "react";
 
 import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/ContainerUtils";
-import { fetchData, fetchMarkerObjectUrl, validLocation, validateLocationProps } from "./Utils/Data";
+import { fetchData, fetchMarkerObjectUrl, parseStaticLocations, validLocation, validateLocationProps } from "./Utils/Data";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
-import parseStaticLocations = Container.parseStaticLocations;
 import Location = Container.Location;
 
 import "leaflet/dist/leaflet.css";
@@ -24,6 +23,8 @@ export interface LeafletMapsContainerState {
 
 export default class LeafletMapsContainer extends Component<LeafletMapsContainerProps, LeafletMapsContainerState> {
     private subscriptionHandles: number[] = [];
+    private locationsArray: Location[] = [];
+    private errorMessage = "";
     readonly state: LeafletMapsContainerState = {
         alertMessage: "",
         locations: [],
@@ -43,6 +44,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     }
 
     componentWillReceiveProps(nextProps: LeafletMapsContainerProps) {
+        this.locationsArray = [];
+        this.errorMessage = "";
         this.resetSubscriptions(nextProps.mxObject);
         const validationMessage = validateLocationProps(nextProps);
         if (nextProps && nextProps.mxObject) {
@@ -52,10 +55,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                 this.fetchData(nextProps.mxObject);
             }
         } else {
-            this.setState({
-                locations: [],
-                alertMessage: ""
-            });
+            this.setState({ locations: [], alertMessage: "" });
         }
     }
 
@@ -97,71 +97,56 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
         const guid = contextObject ? contextObject.getGuid() : "";
-        this.props.locations.map(locations => {
-            this.setState({ isFetchingData: true });
-            if (locations.dataSourceType === "static") {
-                parseStaticLocations(this.props).then(results => this.setState({ locations: results, isFetchingData: false }));
-            } else if (locations.dataSourceType === "context" && contextObject) {
-                this.setLocationsFromMxObjects([ contextObject ]);
+        this.setState({ isFetchingData: true });
+        this.props.locations.forEach(location => {
+            if (location.dataSourceType === "static") {
+                this.locationsArray.push(parseStaticLocations(location));
+                this.setState({
+                    locations: this.locationsArray,
+                    isFetchingData: false
+                });
+            } else if (location.dataSourceType === "context" && contextObject) {
+                this.setLocationsFromMxObjects([ contextObject ], location);
             } else {
                 fetchData({
                     guid,
-                    type: locations.dataSourceType,
-                    entity: locations.locationsEntity,
-                    constraint: locations.entityConstraint,
-                    microflow: locations.dataSourceMicroflow
+                    type: location.dataSourceType,
+                    entity: location.locationsEntity,
+                    constraint: location.entityConstraint,
+                    microflow: location.dataSourceMicroflow
                 })
-                .then(this.setLocationsFromMxObjects)
-                .catch(reason => {
-                    this.setState({
-                        alertMessage: `Failed because of ${reason}`,
-                        locations: []
-                    });
-                });
+                .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
+                .catch(reason => this.setState({ alertMessage: `Failed because of ${reason}`, locations: [] }));
             }
         });
     }
 
-    private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[]) => {
-        this.props.locations.map(locationAttr => {
-            const locations = mxObjects.map(mxObject => {
-                const lat = mxObject.get(locationAttr.latitudeAttribute as string);
-                const lng = mxObject.get(locationAttr.longitudeAttribute as string);
-
-                return fetchMarkerObjectUrl({
-                    type: locationAttr.markerImage,
-                    markerIcon: locationAttr.staticMarkerIcon
-                }, mxObject)
-                    .then((markerUrl: string) => {
-                        return {
-                            latitude: lat ? Number(lat) : undefined,
-                            longitude: lng ? Number(lng) : undefined,
-                            mxObject,
-                            url: markerUrl
-                        };
-                    })
-                    .catch(reason => reason);
-            });
-
-            Promise.all(locations).then(results => {
-                // tslint:disable-next-line:prefer-const
-                let locationsArray: Location[] = []; let errorMessage = "";
-                results.forEach(location => {
-                    if (validLocation(location)) {
-                        locationsArray.push(location);
-                    } else if (!validLocation(location)) {
-                        errorMessage = "Failed because invalid coordinates were passed";
-                    }
-                });
-                this.setState({
-                    locations: locationsArray,
-                    isFetchingData: false,
-                    alertMessage: errorMessage
-                });
-            });
-
-        });
-    }
+    private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[], locationAttr: Container.DataSourceLocationProps) =>
+        Promise.all(mxObjects.map(mxObject =>
+            fetchMarkerObjectUrl({ type: locationAttr.markerImage, markerIcon: locationAttr.staticMarkerIcon }, mxObject)
+                .then(markerUrl => {
+                    return {
+                        latitude: Number(mxObject.get(locationAttr.latitudeAttribute as string)),
+                        longitude: Number(mxObject.get(locationAttr.longitudeAttribute as string)),
+                        mxObject,
+                        url: markerUrl
+                    };
+                })))
+                .then(results => {
+                    results.forEach(location => {
+                        if (validLocation(location)) {
+                            this.locationsArray.push(location);
+                        } else {
+                            this.errorMessage = "Invalid coordinates were passed";
+                        }
+                    });
+                    this.setState({
+                        locations: this.locationsArray,
+                        isFetchingData: false,
+                        alertMessage: this.errorMessage
+                    });
+                })
+                .catch(reason => this.setState({ alertMessage: `Failed due to, ${reason}`, locations: [] }))
 
     private executeAction = (markerLocation: Location) => {
         const object = markerLocation.mxObject;
