@@ -2,7 +2,7 @@ import singleLocationPage from "./pages/singleLocation.page";
 import xpathPage from "./pages/xpath.page";
 
 describe("Leaflet maps", () => {
-    const alertValue = "Invalid Coordinates were passed";
+    const alertValue = "Invalid coordinates were passed";
 
     it("should show a single location", () => {
         singleLocationPage.open();

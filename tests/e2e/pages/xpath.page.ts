@@ -13,7 +13,7 @@ class XpathPage extends BasePage {
     }
 
     public open(): void {
-        browser.url("/p/xpath");
+        browser.url("/p/MarkerMicroflow");
     }
 }
 

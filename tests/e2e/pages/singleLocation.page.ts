@@ -16,7 +16,7 @@ class SingleLocationPage extends BasePage {
     }
 
     public open(): void {
-        browser.url("/p/CorrectCoordinate");
+        browser.url("/p/Playground");
     }
 }
 
