@@ -97,18 +97,14 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private setTileLayer = () => {
-        if (this.props.mapProvider === "openStreet") {
-            return tileLayer(customUrls.openStreetMap, {
-                attribution: mapAttr.openStreetMapAttr
-            });
-        } else if (this.props.mapProvider === "mapBox") {
-            return tileLayer(customUrls.mapbox + this.props.mapBoxAccessToken, {
-                attribution: mapAttr.mapboxAttr,
-                id: "mapbox.streets"
-            });
-        } else {
-            return tileLayer(customUrls.openStreetMap);
-        }
+        const urlTemplate = this.props.mapProvider === "mapBox"
+            ? customUrls.mapbox + this.props.mapBoxAccessToken : customUrls.openStreetMap;
+        const mapAttribution = this.props.mapProvider === "mapBox" ? mapAttr.mapboxAttr : mapAttr.openStreetMapAttr;
+
+        return tileLayer(urlTemplate, {
+            attribution: mapAttribution,
+            id: this.props.mapProvider === "mapBox" ? "mapbox.streets" : undefined
+        });
     }
 
     private setDefaultCenter = (props: LeafletMapProps) => {
@@ -150,7 +146,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
         setTimeout(() => {
             if (this.map) {
                 try {
-                    this.map.fitBounds(this.markerGroup.getBounds()).invalidateSize();
+                    this.map.fitBounds(this.markerGroup.getBounds(), { animate: false }).invalidateSize();
                 } catch (error) {
                     this.setState({ alertMessage: `Failed due to ${error.message}` });
                 }

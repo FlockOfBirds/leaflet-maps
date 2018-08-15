@@ -1,8 +1,8 @@
 import { random } from "faker";
 
 import { Container } from "../Utils/namespace";
-import locationDataProps = Container.DataSourceLocationProps;
 import { validLocation, validateLocationProps } from "../Utils/Validations";
+import locationDataProps = Container.DataSourceLocationProps;
 
 describe("utils/Data", () => {
 

@@ -70,4 +70,6 @@ export function getVisibleProperties(valueMap: LeafletMapsContainerProps, visibi
             visibilityMap.locations[index].PageLocation = location.onClickEvent === "showPage";
         });
     }
+
+    return visibilityMap;
 }

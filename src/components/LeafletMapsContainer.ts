@@ -122,7 +122,12 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                         microflow: location.dataSourceMicroflow
                     })
                     .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
-                    .catch(reason => this.setState({ alertMessage: `Failed because of ${reason}`, locations: [], isFetchingData: false }));
+                    .catch(reason =>
+                        this.setState({
+                            alertMessage: `Failed because of ${reason}`,
+                            locations: [],
+                            isFetchingData: false
+                        }));
                 }
             });
         }
@@ -157,7 +162,12 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                         alertMessage: this.errorMessage.join(", ")
                     });
                 })
-                .catch(reason => this.setState({ alertMessage: `Failed due to, ${reason}`, locations: [], isFetchingData: false }))
+                .catch(reason =>
+                    this.setState({
+                        alertMessage: `Failed due to, ${reason}`,
+                        locations: [],
+                        isFetchingData: false
+                    }))
 
     private executeAction = (markerLocation: Location) => {
         const object = markerLocation.mxObject;
