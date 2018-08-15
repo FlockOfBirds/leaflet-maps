@@ -1,7 +1,10 @@
-import { Style } from "./Styles";
-import Dimensions = Style.Dimensions;
-
 export namespace Container {
+
+    export type MarKerImages = "systemImage" | "staticImage";
+    export type DataSource = "static" | "XPath" | "microflow" | "context";
+    export type OnClickOptions = "doNothing" | "showPage" | "callMicroflow" | "callNanoflow";
+    export type PageLocation = "content" | "popup" | "modal";
+    export type mapProviders = "openStreet" | "mapBox";
 
     export interface WrapperProps {
         "class"?: string;
@@ -64,16 +67,10 @@ export namespace Container {
         attributionControl?: boolean;
     }
 
-    export interface MapProps extends MapControlOptions, DefaultLocations, Dimensions {
+    export interface MapProps extends MapControlOptions, DefaultLocations, MapUtils.Dimensions {
         mapProvider?: mapProviders;
         mapBoxAccessToken?: string;
     }
-
-    export type MarKerImages = "systemImage" | "staticImage";
-    export type DataSource = "static" | "XPath" | "microflow" | "context";
-    export type OnClickOptions = "doNothing" | "showPage" | "callMicroflow" | "callNanoflow";
-    export type PageLocation = "content" | "popup" | "modal";
-    export type mapProviders = "openStreet" | "mapBox";
 }
 
 export namespace Data {
@@ -101,4 +98,39 @@ export namespace Data {
         type: Container.MarKerImages;
         markerIcon: string;
     }
+}
+
+export namespace MapUtils {
+
+    export type heightUnitType = "percentageOfWidth" | "percentageOfParent" | "pixels";
+    export type widthUnitType = "percentage" | "pixels";
+
+    export interface Dimensions {
+        autoZoom?: boolean;
+        zoomLevel: number;
+        widthUnit: widthUnitType;
+        width: number;
+        height: number;
+        heightUnit: heightUnitType;
+    }
+
+    export interface CustomTypeUrls {
+        readonly openStreetMap: string;
+        readonly mapbox: string;
+    }
+
+    export interface MapAttributions {
+        readonly openStreetMapAttr: string;
+        readonly mapboxAttr: string;
+    }
+
+    export const customUrls: CustomTypeUrls = {
+        openStreetMap: `//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`,
+        mapbox: `//api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=`
+    };
+
+    export const mapAttr: MapAttributions = {
+        openStreetMapAttr: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`,
+        mapboxAttr: `Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>`
+    };
 }

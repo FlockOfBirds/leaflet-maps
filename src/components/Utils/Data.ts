@@ -1,4 +1,4 @@
-import { Container, Data } from "./ContainerUtils";
+import { Container, Data } from "./namespace";
 import { UrlHelper } from "./UrlHelper";
 
 type MxObject = mendix.lib.MxObject;

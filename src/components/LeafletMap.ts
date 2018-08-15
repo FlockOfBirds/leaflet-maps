@@ -10,8 +10,8 @@ import {
 } from "leaflet";
 import * as classNames from "classnames";
 
-import { Container } from "./Utils/ContainerUtils";
-import { MapUtils, Style } from "./Utils/Styles";
+import { Container, MapUtils } from "./Utils/namespace";
+import { Style } from "./Utils/Styles";
 import { Alert } from "./Alert";
 import MapProps = Container.MapProps;
 import Location = Container.Location;

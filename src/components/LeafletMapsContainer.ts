@@ -1,7 +1,7 @@
 import { Component, createElement } from "react";
 
 import { LeafletMap } from "./LeafletMap";
-import { Container } from "./Utils/ContainerUtils";
+import { Container } from "./Utils/namespace";
 import { fetchData, fetchMarkerObjectUrl, parseStaticLocations, validLocation, validateLocationProps } from "./Utils/Data";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 import MapProps = Container.MapProps;
