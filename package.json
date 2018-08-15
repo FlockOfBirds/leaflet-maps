@@ -1,7 +1,7 @@
 {
   "name": "leafletmaps",
   "widgetName": "LeafletMaps",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Add different type of maps to your application, using LeafletJS",
   "copyright": "Mendix BV",
   "scripts": {
