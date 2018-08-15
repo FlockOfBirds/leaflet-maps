@@ -94,31 +94,33 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     }
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
-        const guid = contextObject ? contextObject.getGuid() : "";
         this.locationsArray = [];
         this.errorMessage = "";
-        this.setState({ isFetchingData: true });
-        this.props.locations.forEach(location => {
-            if (location.dataSourceType === "static") {
-                this.locationsArray.push(parseStaticLocations(location));
-                this.setState({
-                    locations: this.locationsArray,
-                    isFetchingData: false
-                });
-            } else if (location.dataSourceType === "context" && contextObject) {
-                this.setLocationsFromMxObjects([ contextObject ], location);
-            } else {
-                fetchData({
-                    guid,
-                    type: location.dataSourceType,
-                    entity: location.locationsEntity,
-                    constraint: location.entityConstraint,
-                    microflow: location.dataSourceMicroflow
-                })
-                .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
-                .catch(reason => this.setState({ alertMessage: `Failed because of ${reason}`, locations: [], isFetchingData: false }));
-            }
-        });
+        if (this.props.locations && this.props.locations.length) {
+            const guid = contextObject ? contextObject.getGuid() : "";
+            this.setState({ isFetchingData: true });
+            this.props.locations.forEach(location => {
+                if (location.dataSourceType === "static") {
+                    this.locationsArray.push(parseStaticLocations(location));
+                    this.setState({
+                        locations: this.locationsArray,
+                        isFetchingData: false
+                    });
+                } else if (location.dataSourceType === "context" && contextObject) {
+                    this.setLocationsFromMxObjects([ contextObject ], location);
+                } else {
+                    fetchData({
+                        guid,
+                        type: location.dataSourceType,
+                        entity: location.locationsEntity,
+                        constraint: location.entityConstraint,
+                        microflow: location.dataSourceMicroflow
+                    })
+                    .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
+                    .catch(reason => this.setState({ alertMessage: `Failed because of ${reason}`, locations: [], isFetchingData: false }));
+                }
+            });
+        }
     }
 
     private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[], locationAttr: Container.DataSourceLocationProps) =>
