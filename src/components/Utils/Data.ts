@@ -3,62 +3,6 @@ import { UrlHelper } from "./UrlHelper";
 
 type MxObject = mendix.lib.MxObject;
 
-export const validateLocationProps = <T extends Partial<Container.LeafletMapsContainerProps>> (locationData: T): string => {
-    const { locations, zoomLevel, autoZoom, mapBoxAccessToken, mapProvider } = locationData;
-    const errorMessage: string[] = [];
-    if (!autoZoom && (zoomLevel && zoomLevel < 2)) {
-        errorMessage.push("Zoom Level should be greater than one");
-    }
-    if (mapProvider === "mapBox" && !mapBoxAccessToken) {
-        errorMessage.push(`A Mapbox token is reaquired`);
-    }
-    if (locations && locations.length) {
-        locations.forEach((location, index) => {
-            if (location.dataSourceType && location.dataSourceType !== "static") {
-                if (!(location.latitudeAttribute && location.longitudeAttribute)) {
-                    errorMessage.push(`The Latitude attribute and longitude attribute are required for data source
-                    ${locations[index].dataSourceType} at location ${index + 1}`);
-                }
-            } else {
-                if (!(location.staticLatitude && location.staticLongitude)) {
-                    errorMessage.push(`Invalid static locations. Latitude and longitude are required at location ${index + 1}`);
-                }
-                const staticLocation = parseStaticLocations(location);
-                if (!validLocation(staticLocation)) {
-                    errorMessage.push(`Invalid Static Locations passed at location ${index + 1}`);
-                }
-            }
-            if (location.dataSourceType === "microflow") {
-                if (!location.dataSourceMicroflow) {
-                    errorMessage.push(`A Microflow is required for Data source Microflow at location ${index + 1}`);
-                }
-            }
-        });
-    }
-
-    return errorMessage.join(", ");
-};
-
-export const parseStaticLocations = (staticlocations: Container.DataSourceLocationProps): Container.Location => ({
-    latitude: staticlocations.staticLatitude.trim() !== "" ? Number(staticlocations.staticLatitude) : undefined,
-    longitude: staticlocations.staticLongitude.trim() !== "" ? Number(staticlocations.staticLongitude) : undefined,
-    url: getStaticMarkerUrl(staticlocations.staticMarkerIcon)
-});
-
-export const getStaticMarkerUrl = (staticMarkerIcon: string): string =>
-    staticMarkerIcon
-        ? UrlHelper.getStaticResourceUrl(staticMarkerIcon)
-        : "";
-
-export const validLocation = (location: Container.Location): boolean => {
-    const { latitude: lat, longitude: lng } = location;
-
-    return typeof lat === "number" && typeof lng === "number"
-        && lat <= 90 && lat >= -90
-        && lng <= 180 && lng >= -180
-        && !(lat === 0 && lng === 0);
-};
-
 export const fetchData = (options: Data.FetchDataOptions): Promise<MxObject[]> =>
     new Promise<MxObject[]>((resolve, reject) => {
         const { guid, entity } = options;
@@ -122,3 +66,14 @@ export const fetchMarkerObjectUrl = (options: Data.FetchMarkerIcons, mxObject?: 
             resolve("");
         }
     });
+
+export const parseStaticLocations = (staticlocations: Container.DataSourceLocationProps): Container.Location => ({
+    latitude: staticlocations.staticLatitude.trim() !== "" ? Number(staticlocations.staticLatitude) : undefined,
+    longitude: staticlocations.staticLongitude.trim() !== "" ? Number(staticlocations.staticLongitude) : undefined,
+    url: getStaticMarkerUrl(staticlocations.staticMarkerIcon)
+});
+
+export const getStaticMarkerUrl = (staticMarkerIcon: string): string =>
+    staticMarkerIcon
+        ? UrlHelper.getStaticResourceUrl(staticMarkerIcon)
+        : "";

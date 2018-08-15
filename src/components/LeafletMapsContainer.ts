@@ -2,7 +2,8 @@ import { Component, createElement } from "react";
 
 import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/namespace";
-import { fetchData, fetchMarkerObjectUrl, parseStaticLocations, validLocation, validateLocationProps } from "./Utils/Data";
+import { fetchData, fetchMarkerObjectUrl, parseStaticLocations } from "./Utils/Data";
+import { validLocation, validateLocationProps } from "./Utils/Validations";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
 import MapProps = Container.MapProps;
 import Location = Container.Location;
@@ -25,7 +26,7 @@ export interface LeafletMapsContainerState {
 export default class LeafletMapsContainer extends Component<LeafletMapsContainerProps, LeafletMapsContainerState> {
     private subscriptionHandles: number[] = [];
     private locationsArray: Location[] = [];
-    private errorMessage = "";
+    private errorMessage: string[] = [];
     readonly state: LeafletMapsContainerState = {
         alertMessage: "",
         locations: [],
@@ -97,15 +98,17 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
         this.locationsArray = [];
-        this.errorMessage = "";
+        this.errorMessage = [];
         if (this.props.locations && this.props.locations.length) {
             const guid = contextObject ? contextObject.getGuid() : "";
             this.setState({ isFetchingData: true });
             this.props.locations.forEach(location => {
                 if (location.dataSourceType === "static") {
-                    this.locationsArray.push(parseStaticLocations(location));
+                    const staticLocation = parseStaticLocations(location);
+                    this.validateLocation(staticLocation);
                     this.setState({
                         locations: this.locationsArray,
+                        alertMessage: this.errorMessage.join(", "),
                         isFetchingData: false
                     });
                 } else if (location.dataSourceType === "context" && contextObject) {
@@ -125,6 +128,14 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         }
     }
 
+    private validateLocation(location: Location) {
+        if (!validLocation(location)) {
+            this.errorMessage.push(`Invalid Locations were passed`);
+        } else {
+            this.locationsArray.push(location);
+        }
+    }
+
     private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[], locationAttr: Container.DataSourceLocationProps) =>
         Promise.all(mxObjects.map(mxObject =>
             fetchMarkerObjectUrl({ type: locationAttr.markerImage, markerIcon: locationAttr.staticMarkerIcon }, mxObject)
@@ -138,16 +149,12 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                 })))
                 .then(locations => {
                     locations.forEach(location => {
-                        if (validLocation(location)) {
-                            this.locationsArray.push(location);
-                        } else {
-                            this.errorMessage = "Invalid coordinates were passed";
-                        }
+                        this.validateLocation(location);
                     });
                     this.setState({
                         locations: this.locationsArray,
                         isFetchingData: false,
-                        alertMessage: this.errorMessage
+                        alertMessage: this.errorMessage.join(", ")
                     });
                 })
                 .catch(reason => this.setState({ alertMessage: `Failed due to, ${reason}`, locations: [], isFetchingData: false }))
