@@ -3,6 +3,7 @@ import { LeafletMap } from "./components/LeafletMap";
 import { validateLocationProps } from "./components/Utils/Data";
 import { Container } from "./components/Utils/ContainerUtils";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
+import MapProps = Container.MapProps;
 
 type VisibilityMap<T> = {
     [P in keyof T]: any;
@@ -18,7 +19,7 @@ export class preview extends Component<LeafletMapsContainerProps> {
             allLocations: [ preview.createSampleLocations() ],
             alertMessage: validationMessage,
             fetchingData: false,
-            ...this.props as LeafletMapsContainerProps
+            ...this.props as MapProps
         });
     }
 

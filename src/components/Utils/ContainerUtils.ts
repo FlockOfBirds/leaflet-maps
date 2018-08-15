@@ -11,9 +11,7 @@ export namespace Container {
         style?: string;
     }
 
-    export interface LeafletMapsContainerProps extends WrapperProps, Dimensions, DefaultLocations, MapControlOptions {
-        mapProvider?: mapProviders;
-        mapBoxAccessToken?: string;
+    export interface LeafletMapsContainerProps extends WrapperProps, MapProps {
         locations: DataSourceLocationProps[];
     }
 
@@ -64,6 +62,11 @@ export namespace Container {
         optionScroll?: boolean;
         optionZoomControl?: boolean;
         attributionControl?: boolean;
+    }
+
+    export interface MapProps extends MapControlOptions, DefaultLocations, Dimensions {
+        mapProvider?: mapProviders;
+        mapBoxAccessToken?: string;
     }
 
     export type MarKerImages = "systemImage" | "staticImage";

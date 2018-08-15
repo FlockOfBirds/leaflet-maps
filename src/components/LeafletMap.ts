@@ -13,23 +13,21 @@ import * as classNames from "classnames";
 import { Container } from "./Utils/ContainerUtils";
 import { MapUtils, Style } from "./Utils/Styles";
 import { Alert } from "./Alert";
-import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
+import MapProps = Container.MapProps;
 import Location = Container.Location;
-import Dimensions = Style.Dimensions;
 import getDimensions = Style.getDimensions;
 import parseStyle = Style.parseStyle;
 import customUrls = MapUtils.customUrls;
 import mapAttr = MapUtils.mapAttr;
 
-type ComponentProps = {
+type LeafletMapProps = {
     allLocations?: Location[];
     className?: string;
     alertMessage?: string;
     fetchingData?: boolean;
+    style?: string;
     onClickAction?: (location: Location) => void;
-} & LeafletMapsContainerProps;
-
-export type LeafletMapProps = ComponentProps & Dimensions;
+} & MapProps;
 
 export interface LeafletMapState {
     center: LatLngLiteral;

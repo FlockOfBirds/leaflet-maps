@@ -4,6 +4,7 @@ import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/ContainerUtils";
 import { fetchData, fetchMarkerObjectUrl, parseStaticLocations, validLocation, validateLocationProps } from "./Utils/Data";
 import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
+import MapProps = Container.MapProps;
 import Location = Container.Location;
 
 import "leaflet/dist/leaflet.css";
@@ -39,7 +40,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             alertMessage: this.state.alertMessage,
             onClickAction: this.executeAction,
             fetchingData: this.state.isFetchingData,
-            ...this.props as LeafletMapsContainerProps
+            style: this.props.style,
+            ...this.props as MapProps
         });
     }
 
@@ -134,8 +136,8 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                         url: markerUrl
                     };
                 })))
-                .then(results => {
-                    results.forEach(location => {
+                .then(locations => {
+                    locations.forEach(location => {
                         if (validLocation(location)) {
                             this.locationsArray.push(location);
                         } else {
