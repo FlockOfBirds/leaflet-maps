@@ -3,7 +3,7 @@ import * as classNames from "classnames";
 
 export interface AlertProps {
     className?: string;
-    bootstrapStyle: "default" | "primary" | "success" | "info" | "warning" | "danger";
+    bootstrapStyle?: "default" | "primary" | "success" | "info" | "warning" | "danger";
 }
 
 // tslint:disable-next-line:variable-name
