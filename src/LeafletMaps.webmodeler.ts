@@ -45,14 +45,14 @@ export function getVisibleProperties(valueMap: LeafletMapsContainerProps, visibi
     if (valueMap.locations && Array.isArray(valueMap.locations)) {
         valueMap.locations.forEach((location, index) => {
             if (location.dataSourceType) {
-                if (location.dataSourceType === "XPath" || "static") {
+                if (!(location.dataSourceType === "microflow")) {
                     visibilityMap.locations[index].dataSourceMicroflow = false;
                 }
-                if (location.dataSourceType === "microflow" || "XPath" || "context") {
+                if (!(location.dataSourceType === "static")) {
                     visibilityMap.locations[index].staticLatitude = false;
                     visibilityMap.locations[index].staticLongitude = false;
                 }
-                if (location.dataSourceType === "context" || "microflow" || "static") {
+                if (!(location.dataSourceType === "XPath")) {
                     visibilityMap.locations[index].entityConstraint = false;
                 }
                 if (location.dataSourceType === "static") {
