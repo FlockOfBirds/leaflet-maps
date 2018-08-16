@@ -67,12 +67,12 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     private resetSubscriptions(contextObject?: mendix.lib.MxObject) {
         this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
         this.subscriptionHandles = [];
-        if (contextObject) {
-            this.subscriptionHandles.push(window.mx.data.subscribe({
-                guid: contextObject.getGuid(),
-                callback: () => this.fetchData(contextObject)
-            }));
-            if (this.props.locations && this.props.locations.length) {
+        if (this.props.locations && this.props.locations.length) {
+            if (contextObject) {
+                this.subscriptionHandles.push(window.mx.data.subscribe({
+                    guid: contextObject.getGuid(),
+                    callback: () => this.fetchData(contextObject)
+                }));
                 this.props.locations.forEach(location => {
                     this.subscriptionHandles.push(window.mx.data.subscribe({
                         entity: location.locationsEntity as string,
@@ -99,38 +99,36 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
         this.locationsArray = [];
         this.errorMessage = [];
-        if (this.props.locations && this.props.locations.length) {
-            const guid = contextObject ? contextObject.getGuid() : "";
-            this.setState({ isFetchingData: true });
-            this.props.locations.forEach(location => {
-                if (location.dataSourceType === "static") {
-                    const staticLocation = parseStaticLocations(location);
-                    this.validateLocation(staticLocation);
+        const guid = contextObject ? contextObject.getGuid() : "";
+        this.setState({ isFetchingData: true });
+        this.props.locations.forEach(location => {
+            if (location.dataSourceType === "static") {
+                const staticLocation = parseStaticLocations(location);
+                this.validateLocation(staticLocation);
+                this.setState({
+                    locations: this.locationsArray,
+                    alertMessage: this.errorMessage.join(", "),
+                    isFetchingData: false
+                });
+            } else if (location.dataSourceType === "context" && contextObject) {
+                this.setLocationsFromMxObjects([ contextObject ], location);
+            } else {
+                fetchData({
+                    guid,
+                    type: location.dataSourceType,
+                    entity: location.locationsEntity,
+                    constraint: location.entityConstraint,
+                    microflow: location.dataSourceMicroflow
+                })
+                .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
+                .catch(reason =>
                     this.setState({
-                        locations: this.locationsArray,
-                        alertMessage: this.errorMessage.join(", "),
+                        alertMessage: `Failed because of ${reason}`,
+                        locations: [],
                         isFetchingData: false
-                    });
-                } else if (location.dataSourceType === "context" && contextObject) {
-                    this.setLocationsFromMxObjects([ contextObject ], location);
-                } else {
-                    fetchData({
-                        guid,
-                        type: location.dataSourceType,
-                        entity: location.locationsEntity,
-                        constraint: location.entityConstraint,
-                        microflow: location.dataSourceMicroflow
-                    })
-                    .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
-                    .catch(reason =>
-                        this.setState({
-                            alertMessage: `Failed because of ${reason}`,
-                            locations: [],
-                            isFetchingData: false
-                        }));
-                }
-            });
-        }
+                    }));
+            }
+        });
     }
 
     private validateLocation(location: Location) {
