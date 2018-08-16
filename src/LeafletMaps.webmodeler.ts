@@ -10,25 +10,25 @@ type VisibilityMap<T> = {
 };
 
 // tslint:disable-next-line:class-name
-export class preview extends Component<LeafletMapsContainerProps> {
+export class preview extends Component<LeafletMapsContainerProps, {}> {
 
     render() {
         const validationMessage = validateLocationProps(this.props);
 
         return createElement(LeafletMap, {
-            allLocations: [ preview.createSampleLocations() ],
+            allLocations: preview.createSampleLocations(),
             alertMessage: validationMessage,
             fetchingData: false,
             ...this.props as MapProps
         });
     }
 
-    static createSampleLocations(): {latitude: number, longitude: number, url: string } {
-        return {
+    static createSampleLocations(): {latitude: number, longitude: number, url: string }[] {
+        return [ {
             latitude: 40.7590110000,
             longitude: -73.9844722000,
             url: ""
-        };
+        } ];
     }
 }
 

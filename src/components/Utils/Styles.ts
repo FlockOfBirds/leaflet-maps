@@ -1,6 +1,8 @@
 import { CSSProperties } from "react";
 import { MapUtils } from "./namespace";
 import Dimensions = MapUtils.Dimensions;
+import CustomTypeUrls = MapUtils.CustomTypeUrls;
+import MapAttributions = MapUtils.MapAttributions;
 
 export namespace Style {
 
@@ -38,5 +40,16 @@ export namespace Style {
         }
 
         return style;
+    };
+
+    export const customUrls: CustomTypeUrls = {
+        openStreetMap: `http://{s}.tile.osm.org/{z}/{x}/{y}.png`,
+        mapbox: `https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=`
+    };
+
+    export const mapAttr: MapAttributions = {
+        openStreetMapAttr: `&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors`,
+        mapboxAttr: `Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,
+            <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>`
     };
 }

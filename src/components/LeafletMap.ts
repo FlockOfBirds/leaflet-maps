@@ -10,15 +10,15 @@ import {
 } from "leaflet";
 import * as classNames from "classnames";
 
-import { Container, MapUtils } from "./Utils/namespace";
+import { Container } from "./Utils/namespace";
 import { Style } from "./Utils/Styles";
 import { Alert } from "./Alert";
 import MapProps = Container.MapProps;
 import Location = Container.Location;
 import getDimensions = Style.getDimensions;
 import parseStyle = Style.parseStyle;
-import customUrls = MapUtils.customUrls;
-import mapAttr = MapUtils.mapAttr;
+import customUrls = Style.customUrls;
+import mapAttr = Style.mapAttr;
 
 type LeafletMapProps = {
     allLocations?: Location[];
@@ -151,7 +151,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                     this.setState({ alertMessage: `Failed due to ${error.message}` });
                 }
                 if (!this.props.autoZoom) {
-                    this.map.setZoom(this.props.zoomLevel);
+                    this.map.setZoom(this.props.zoomLevel, { animate: false });
                 }
             }
         }, 0);

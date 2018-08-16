@@ -123,14 +123,4 @@ export namespace MapUtils {
         readonly openStreetMapAttr: string;
         readonly mapboxAttr: string;
     }
-
-    export const customUrls: CustomTypeUrls = {
-        openStreetMap: `//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`,
-        mapbox: `//api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=`
-    };
-
-    export const mapAttr: MapAttributions = {
-        openStreetMapAttr: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`,
-        mapboxAttr: `Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>`
-    };
 }
