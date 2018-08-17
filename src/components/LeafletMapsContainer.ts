@@ -1,4 +1,5 @@
 import { Component, createElement } from "react";
+import { LeafletEvent } from "leaflet";
 
 import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/namespace";
@@ -15,7 +16,6 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
 import "./ui/LeafletMaps.css";
-import { LeafletEvent } from "../../node_modules/@types/leaflet";
 
 export interface LeafletMapsContainerState {
     alertMessage?: string;

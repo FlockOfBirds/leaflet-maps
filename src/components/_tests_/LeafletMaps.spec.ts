@@ -15,7 +15,8 @@ describe("Leaflet maps", () => {
         optionZoomControl: true,
         zoomLevel: 10,
         width: 50,
-        widthUnit: "pixels"
+        widthUnit: "percentage",
+        mapProvider: "openStreet"
     };
 
     const renderLeafletMap = (props: LeafletMapProps) => shallow(createElement(LeafletMap, props));
@@ -23,11 +24,70 @@ describe("Leaflet maps", () => {
 
     it("renders structure correctly", () => {
         const leafletMap = renderLeafletMap(defaultProps);
+        const mapStyle = { width: "100px", height: "580px" };
+        leafletMap.setProps({
+            heightUnit: "percentageOfWidth",
+            widthUnit: "pixels"
+        });
 
         expect(leafletMap).toBeElement(
             createElement("div", {},
                 createElement(Alert, { className: "widget-leaflet-maps-alert leaflet-control" }),
-                createElement("div", { className: "widget-leaflet-maps-wrapper", style: {} },
+                createElement("div", { className: "widget-leaflet-maps-wrapper", style: mapStyle },
+                    createElement("div", { className: "widget-leaflet-maps" })
+                )
+            )
+        );
+    });
+
+    it("renders structure correctly with pixels", () => {
+        const leafletMap = renderLeafletMap(defaultProps);
+        const mapStyle = { width: "100px", height: "580px" };
+        leafletMap.setProps({
+            heightUnit: "pixels",
+            widthUnit: "pixels"
+        });
+
+        expect(leafletMap).toBeElement(
+            createElement("div", {},
+                createElement(Alert, { className: "widget-leaflet-maps-alert leaflet-control" }),
+                createElement("div", { className: "widget-leaflet-maps-wrapper", style: mapStyle },
+                    createElement("div", { className: "widget-leaflet-maps" })
+                )
+            )
+        );
+    });
+
+    it("renders the structure correctly with percentage units", () => {
+        const leafletMap = renderLeafletMap(defaultProps);
+        const mapStyle = { width: "100%", paddingBottom: "68%" };
+        leafletMap.setProps({
+            heightUnit: "percentageOfWidth",
+            widthUnit: "percentage"
+        });
+
+        expect(leafletMap).toBeElement(
+            createElement("div", {},
+                createElement(Alert, { className: "widget-leaflet-maps-alert leaflet-control" }),
+                createElement("div", { className: "widget-leaflet-maps-wrapper", style: mapStyle },
+                    createElement("div", { className: "widget-leaflet-maps" })
+                )
+            )
+        );
+    });
+
+    it("renders the structure correctly with percentage of parent units", () => {
+        const leafletMap = renderLeafletMap(defaultProps);
+        const mapStyle = { width: "100%", height: "89%" };
+        leafletMap.setProps({
+            heightUnit: "percentageOfParent",
+            widthUnit: "percentage"
+        });
+
+        expect(leafletMap).toBeElement(
+            createElement("div", {},
+                createElement(Alert, { className: "widget-leaflet-maps-alert leaflet-control" }),
+                createElement("div", { className: "widget-leaflet-maps-wrapper", style: mapStyle },
                     createElement("div", { className: "widget-leaflet-maps" })
                 )
             )
@@ -73,11 +133,27 @@ describe("Leaflet maps", () => {
         expect(componentWillUnmount).toHaveBeenCalled();
     });
 
-    it("creates markers from given locations", () => {
+    it("creates markers from given locations with a url", () => {
         const customProps = {
             ...defaultProps,
             allLocations: [ { latitude: 40.759011, longitude: -73.9844722, mxObject: undefined, url: "http://dummy.url" } ],
-            fetchingData: false
+            fetchingData: false,
+            autoZoom: false
+        };
+        const leafletMap = fullRenderLeafletMap(customProps);
+        const leafletMapInstance = leafletMap.instance() as any;
+        const createMarkerSpy = spyOn(leafletMapInstance, "renderMarkers").and.callThrough();
+        leafletMapInstance.componentWillReceiveProps(customProps);
+
+        expect(createMarkerSpy).toHaveBeenCalledWith(customProps.allLocations);
+    });
+
+    it("creates markers from given locations with default icon", () => {
+        const customProps = {
+            ...defaultProps,
+            allLocations: [ { latitude: 40.759011, longitude: -73.9844722, mxObject: undefined } ],
+            fetchingData: false,
+            autoZoom: false
         };
         const leafletMap = fullRenderLeafletMap(customProps);
         const leafletMapInstance = leafletMap.instance() as any;
