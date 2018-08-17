@@ -1,4 +1,4 @@
-import { Component, createElement } from "react";
+import { CSSProperties, Component, createElement } from "react";
 import {
     FeatureGroup,
     LatLngLiteral,
@@ -10,22 +10,20 @@ import {
 } from "leaflet";
 import * as classNames from "classnames";
 
-import { Container } from "./Utils/namespace";
-import { Style } from "./Utils/Styles";
+import { Container, MapUtils } from "./Utils/namespace";
 import { Alert } from "./Alert";
 import MapProps = Container.MapProps;
 import Location = Container.Location;
-import getDimensions = Style.getDimensions;
-import parseStyle = Style.parseStyle;
-import customUrls = Style.customUrls;
-import mapAttr = Style.mapAttr;
+import customUrls = MapUtils.customUrls;
+import mapAttr = MapUtils.mapAttr;
+import Dimensions = MapUtils.Dimensions;
 
 export type LeafletMapProps = {
     allLocations?: Location[];
     className?: string;
     alertMessage?: string;
     fetchingData?: boolean;
-    style?: string;
+    style?: object;
     onClickMarker?: (event: LeafletEvent) => void;
 } & MapProps;
 
@@ -54,7 +52,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             createElement("div",
                 {
                     className: classNames("widget-leaflet-maps-wrapper", this.props.className),
-                    style: { ...getDimensions(this.props), ...parseStyle(this.props.style) }
+                    style: { ...this.props.style , ...this.getDimensions(this.props) }
                 },
                 createElement("div", {
                     className: "widget-leaflet-maps",
@@ -181,4 +179,21 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 reject("Failed to create Marker");
             }
         })
+
+    private getDimensions = <T extends Dimensions>(props: T): CSSProperties => {
+        const style: CSSProperties = {
+            width: props.widthUnit === "percentage" ? `${props.width}%` : `${props.width}px`
+        };
+        if (props.heightUnit === "percentageOfWidth") {
+            style.paddingBottom = props.widthUnit === "percentage"
+                ? `${props.height}%`
+                : `${props.width / 2}px`;
+        } else if (props.heightUnit === "pixels") {
+            style.height = `${props.height}px`;
+        } else if (props.heightUnit === "percentageOfParent") {
+            style.height = `${props.height}%`;
+        }
+
+        return style;
+    }
 }
