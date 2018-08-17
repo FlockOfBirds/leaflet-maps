@@ -15,6 +15,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
 import "./ui/LeafletMaps.css";
+import { LeafletEvent } from "../../node_modules/@types/leaflet";
 
 export interface LeafletMapsContainerState {
     alertMessage?: string;
@@ -39,7 +40,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
             allLocations: this.state.locations,
             className: this.props.class,
             alertMessage: this.state.alertMessage,
-            onClickAction: this.executeAction,
+            onClickMarker: this.onClickMarker,
             fetchingData: this.state.isFetchingData,
             style: this.props.style,
             ...this.props as MapProps
@@ -150,22 +151,29 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                         url: markerUrl
                     };
                 })))
-                .then(locations => {
-                    locations.forEach(location => {
-                        this.validateLocation(location);
-                    });
-                    this.setState({
-                        locations: this.locationsArray,
-                        isFetchingData: false,
-                        alertMessage: this.errorMessage.join(", ")
-                    });
+            .then(locations => {
+                locations.forEach(location => {
+                    this.validateLocation(location);
+                });
+                this.setState({
+                    locations: this.locationsArray,
+                    isFetchingData: false,
+                    alertMessage: this.errorMessage.join(", ")
+                });
+            })
+            .catch(reason =>
+                this.setState({
+                    alertMessage: `Failed due to, ${reason}`,
+                    locations: [],
+                    isFetchingData: false
                 })
-                .catch(reason =>
-                    this.setState({
-                        alertMessage: `Failed due to, ${reason}`,
-                        locations: [],
-                        isFetchingData: false
-                    }))
+            )
+    private onClickMarker = (event: LeafletEvent) => {
+        const { locations } = this.state;
+        if (locations) {
+            this.executeAction(locations[ locations.findIndex(targetLoc => targetLoc.latitude === event.target.getLatLng().lat) ]);
+        }
+    }
 
     private executeAction = (markerLocation: Location) => {
         const object = markerLocation.mxObject;

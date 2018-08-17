@@ -20,13 +20,14 @@ import parseStyle = Style.parseStyle;
 import customUrls = Style.customUrls;
 import mapAttr = Style.mapAttr;
 
-type LeafletMapProps = {
+export type LeafletMapProps = {
     allLocations?: Location[];
     className?: string;
     alertMessage?: string;
     fetchingData?: boolean;
     style?: string;
     onClickAction?: (location: Location) => void;
+    onClickMarker?: (event: LeafletEvent) => void;
 } & MapProps;
 
 export interface LeafletMapState {
@@ -128,7 +129,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 this.createMarker(location)
                     .then(marker =>
                         this.markerGroup.addLayer(marker
-                            .on("click", event => this.markerOnClick(event))
+                            .on("click", event => this.props.onClickMarker ? this.props.onClickMarker(event) : undefined)
                         ))
                     .then(layer =>
                         this.map
@@ -181,11 +182,4 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                 reject("Failed to create Marker");
             }
         })
-
-    private markerOnClick = (event: LeafletEvent) => {
-        const { onClickAction, allLocations } = this.props;
-        if (onClickAction && allLocations) {
-            onClickAction(allLocations[allLocations.findIndex(targetLoc => targetLoc.latitude === event.target.getLatLng().lat)]);
-        }
-    }
 }
