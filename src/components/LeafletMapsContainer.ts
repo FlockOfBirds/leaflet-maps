@@ -121,13 +121,14 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
                     constraint: location.entityConstraint,
                     microflow: location.dataSourceMicroflow
                 })
-                .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
-                .catch(reason =>
-                    this.setState({
-                        alertMessage: `Failed because of ${reason}`,
-                        locations: [],
-                        isFetchingData: false
-                    }));
+                    .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
+                    .catch(reason =>
+                        this.setState({
+                            alertMessage: `Failed because of ${reason}`,
+                            locations: [],
+                            isFetchingData: false
+                        })
+                    );
             }
         });
     }

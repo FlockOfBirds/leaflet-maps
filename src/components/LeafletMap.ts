@@ -26,7 +26,6 @@ export type LeafletMapProps = {
     alertMessage?: string;
     fetchingData?: boolean;
     style?: string;
-    onClickAction?: (location: Location) => void;
     onClickMarker?: (event: LeafletEvent) => void;
 } & MapProps;
 
@@ -109,7 +108,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
     }
 
     private setDefaultCenter = (props: LeafletMapProps) => {
-        const { defaultCenterLatitude, defaultCenterLongitude } = props;
+        const { defaultCenterLatitude, defaultCenterLongitude, fetchingData } = props;
         if (defaultCenterLatitude && defaultCenterLongitude) {
             this.setState({
                 center: {
@@ -117,7 +116,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
                     lng: Number(props.defaultCenterLongitude)
                 }
             });
-        } else if (!props.fetchingData) {
+        } else if (!fetchingData) {
             this.renderMarkers(props.allLocations);
         }
     }

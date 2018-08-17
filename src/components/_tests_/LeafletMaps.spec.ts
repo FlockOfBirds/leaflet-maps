@@ -34,7 +34,7 @@ describe("Leaflet maps", () => {
         );
     });
 
-    it("with default c7enter Latitude and Longitude sets default center location based on them", () => {
+    it("with default center Latitude and Longitude sets default center location based on them", () => {
         const leafletMap = fullRenderLeafletMap(defaultProps);
         leafletMap.setProps({
             defaultCenterLatitude: "39.90419989999999",
@@ -73,14 +73,16 @@ describe("Leaflet maps", () => {
         expect(componentWillUnmount).toHaveBeenCalled();
     });
 
-    xit("creates markers from given locations", () => {
+    it("creates markers from given locations", () => {
         const customProps = {
             ...defaultProps,
-            allLocations: [ { latitude: 40.759011, longitude: -73.9844722, mxObject: undefined, url: "" } ],
+            allLocations: [ { latitude: 40.759011, longitude: -73.9844722, mxObject: undefined, url: "http://dummy.url" } ],
             fetchingData: false
         };
         const leafletMap = fullRenderLeafletMap(customProps);
-        const createMarkerSpy = spyOn(leafletMap.instance() as any, "renderMarkers").and.callThrough();
+        const leafletMapInstance = leafletMap.instance() as any;
+        const createMarkerSpy = spyOn(leafletMapInstance, "renderMarkers").and.callThrough();
+        leafletMapInstance.componentWillReceiveProps(customProps);
 
         expect(createMarkerSpy).toHaveBeenCalledWith(customProps.allLocations);
     });
