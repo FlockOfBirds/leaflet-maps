@@ -4,7 +4,7 @@ export namespace Container {
     export type DataSource = "static" | "XPath" | "microflow" | "context";
     export type OnClickOptions = "doNothing" | "showPage" | "callMicroflow" | "callNanoflow";
     export type PageLocation = "content" | "popup" | "modal";
-    export type mapProviders = "openStreet" | "mapBox";
+    export type mapProviders = "openStreet" | "mapBox" | "googleMaps";
 
     export interface WrapperProps {
         "class"?: string;
@@ -70,6 +70,7 @@ export namespace Container {
     export interface MapProps extends MapControlOptions, DefaultLocations, MapUtils.Dimensions {
         mapProvider?: mapProviders;
         mapBoxAccessToken?: string;
+        googleMapsToken?: string;
     }
 }
 
