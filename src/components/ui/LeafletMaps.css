@@ -17,3 +17,12 @@
 .widget-leaflet-maps .marker {
     cursor: pointer;
 }
+
+.widget-google-maps-wrapper {
+    position: relative;
+}
+
+.widget-google-maps-wrapper > div {
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
+}
