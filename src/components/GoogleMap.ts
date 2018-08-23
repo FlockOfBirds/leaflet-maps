@@ -22,7 +22,7 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
 
     private defaultCenterLocation: google.maps.LatLngLiteral = { lat: 51.9107963, lng: 4.4789878 };
     private markers: google.maps.Marker[] = [];
-    private bounds?: google.maps.LatLngBounds;
+    private bounds!: google.maps.LatLngBounds;
 
     private googleMapsNode?: HTMLDivElement;
     URL = `https://maps.googleapis.com/maps/api/js?key=${this.props.googleMapsToken}`;
@@ -101,24 +101,25 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
         if (mapLocations && mapLocations.length) {
             this.bounds = new google.maps.LatLngBounds();
             mapLocations.forEach(location => {
+                this.bounds.extend({ lat : Number(location.latitude), lng: Number(location.longitude) });
                 const marker = new google.maps.Marker({
                     position: { lat: Number(location.latitude), lng: Number(location.longitude) },
                     icon: location.url ? location.url : undefined
                 });
-                if (this.bounds) {
-                    this.bounds.extend({ lat : Number(location.latitude), lng: Number(location.longitude) });
-                }
                 this.markers.push(marker);
             });
-            setTimeout(() => this.setBounds(this.bounds), 0);
             this.setMapOnMarkers(this.map);
+            setTimeout(() => this.setBounds(this.bounds), 0);
         }
     }
 
     private setBounds = (mapBounds?: google.maps.LatLngBounds) => {
-        if (this.map && mapBounds) {
+        if (mapBounds && this.map) {
             try {
                 this.map.fitBounds(mapBounds);
+                if (!this.props.autoZoom) {
+                    this.map.setZoom(this.props.zoomLevel);
+                }
             } catch (error) {
                 this.setState({ alertMessage: `Failed due to ${error.message}` });
             }
