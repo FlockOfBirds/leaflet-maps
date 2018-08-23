@@ -16,7 +16,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
 import "./ui/LeafletMaps.css";
-import { GoogleMap } from "./GoogleMap";
+import { wrappedGoogleMap } from "./GoogleMap";
 
 export interface LeafletMapsContainerState {
     alertMessage?: string;
@@ -38,9 +38,12 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
 
     render() {
         if (this.props.mapProvider === "googleMaps") {
-            return createElement(GoogleMap, {
+            return createElement(wrappedGoogleMap, {
                 allLocations: this.state.locations,
                 fetchingData: this.state.isFetchingData,
+                className: this.props.class,
+                alertMessage: this.state.alertMessage,
+                style: this.parseStyle(this.props.style),
                 ...this.props as MapProps
             });
         } else {

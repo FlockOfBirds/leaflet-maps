@@ -2,21 +2,21 @@ import { Component, createElement } from "react";
 import * as classNames from "classnames";
 
 import { Alert } from "./Alert";
+import googleApiWrapper from "./GoogleApi";
 import { Container, MapUtils } from "./Utils/namespace";
 import { Shared } from "./Utils/sharedConfigs";
 import MapProps = Container.MapProps;
 import Location = Container.Location;
 import SharedProps = MapUtils.SharedProps;
 
-type GoogleMapsProps = SharedProps & MapProps;
+export type GoogleMapsProps = { scriptsLoaded?: boolean } & SharedProps & MapProps;
 
 export interface GoogleMapState {
-    isLoaded: boolean;
     center: google.maps.LatLngLiteral;
     alertMessage?: string;
 }
 
-export class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
+class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
 
     private map!: google.maps.Map;
 
@@ -24,9 +24,9 @@ export class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
     private markers: google.maps.Marker[] = [];
     private bounds?: google.maps.LatLngBounds;
 
-    private leafletNode?: HTMLDivElement;
+    private googleMapsNode?: HTMLDivElement;
     URL = `https://maps.googleapis.com/maps/api/js?key=${this.props.googleMapsToken}`;
-    readonly state: GoogleMapState = { isLoaded: false, center: this.defaultCenterLocation };
+    readonly state: GoogleMapState = { center: this.defaultCenterLocation };
 
     render() {
         return createElement("div", {},
@@ -41,18 +41,22 @@ export class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
                 },
                 createElement("div", {
                     className: "widget-google-maps",
-                    ref: (leafletNode?: HTMLDivElement) => this.leafletNode = leafletNode
+                    ref: (leafletNode?: HTMLDivElement) => this.googleMapsNode = leafletNode
                 })
             )
         );
     }
 
-    componentWillReceiveProps(newProps: GoogleMapsProps) {
-        this.setDefaultCenter(newProps);
+    componentWillReceiveProps(nextProps: GoogleMapsProps) {
+        if (nextProps.scriptsLoaded) {
+            this.initMap(nextProps);
+        }
     }
 
     componentDidMount() {
-        this.loadGoogleScript();
+        if (this.props.scriptsLoaded) {
+            this.initMap(this.props);
+        }
     }
 
     componentDidUpdate() {
@@ -65,24 +69,15 @@ export class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
         // TODO remove event listeners if any
     }
 
-    private loadGoogleScript = () => {
-        if (!document.querySelectorAll(`[src="${this.URL}"]`).length) {
-            document.body.appendChild(Object.assign(
-                document.createElement("script"), {
-                    type: "text/javascript",
-                    src: this.URL,
-                    onload: () => this.initMap(),
-                    onerror: () => this.setState({ alertMessage: "Could not load. Please check your internet connection" })
-                }));
-        }
-    }
-
-    private initMap = () => {
-        if (this.leafletNode) {
-            this.map = new google.maps.Map(this.leafletNode, {
-                zoom: this.props.zoomLevel
+    private initMap = (props: GoogleMapsProps) => {
+        if (this.googleMapsNode) {
+            this.map = new google.maps.Map(this.googleMapsNode, {
+                zoom: this.props.zoomLevel,
+                minZoom: 2,
+                maxZoom: 20
             });
         }
+        this.setDefaultCenter(props);
     }
 
     private setDefaultCenter = (props: GoogleMapsProps) => {
@@ -115,8 +110,18 @@ export class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
                 }
                 this.markers.push(marker);
             });
-            this.map.fitBounds(this.bounds);
+            setTimeout(() => this.setBounds(this.bounds), 0);
             this.setMapOnMarkers(this.map);
+        }
+    }
+
+    private setBounds = (mapBounds?: google.maps.LatLngBounds) => {
+        if (this.map && mapBounds) {
+            try {
+                this.map.fitBounds(mapBounds);
+            } catch (error) {
+                this.setState({ alertMessage: `Failed due to ${error.message}` });
+            }
         }
     }
 
@@ -126,3 +131,6 @@ export class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
         }
     }
 }
+
+export const wrappedGoogleMap = googleApiWrapper(`https://maps.googleapis.com/maps/api/js?key=`)(GoogleMap);
+export default wrappedGoogleMap ;
