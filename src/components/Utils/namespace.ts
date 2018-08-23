@@ -14,7 +14,7 @@ export namespace Container {
         style?: string;
     }
 
-    export interface LeafletMapsContainerProps extends WrapperProps, MapProps {
+    export interface MapsContainerProps extends WrapperProps, MapProps {
         locations: DataSourceLocationProps[];
     }
 
@@ -102,6 +102,14 @@ export namespace Data {
 }
 
 export namespace MapUtils {
+
+    export interface SharedProps {
+        allLocations?: Container.Location[];
+        className?: string;
+        alertMessage?: string;
+        fetchingData?: boolean;
+        style?: object;
+    }
 
     export type heightUnitType = "percentageOfWidth" | "percentageOfParent" | "pixels";
     export type widthUnitType = "percentage" | "pixels";

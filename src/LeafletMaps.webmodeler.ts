@@ -2,7 +2,7 @@ import { Component, createElement } from "react";
 import { LeafletMap } from "./components/LeafletMap";
 import { validateLocationProps } from "./components/Utils/Validations";
 import { Container } from "./components/Utils/namespace";
-import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
+import MapsContainerProps = Container.MapsContainerProps;
 import MapProps = Container.MapProps;
 
 type VisibilityMap<T> = {
@@ -10,7 +10,7 @@ type VisibilityMap<T> = {
 };
 
 // tslint:disable-next-line:class-name
-export class preview extends Component<LeafletMapsContainerProps, {}> {
+export class preview extends Component<MapsContainerProps, {}> {
 
     render() {
         const validationMessage = validateLocationProps(this.props);
@@ -41,7 +41,7 @@ export function getPreviewCss() {
     );
 }
 
-export function getVisibleProperties(valueMap: LeafletMapsContainerProps, visibilityMap: VisibilityMap<LeafletMapsContainerProps>) {
+export function getVisibleProperties(valueMap: MapsContainerProps, visibilityMap: VisibilityMap<MapsContainerProps>) {
     if (valueMap.locations && Array.isArray(valueMap.locations)) {
         valueMap.locations.forEach((location, index) => {
             if (location.dataSourceType) {

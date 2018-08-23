@@ -5,7 +5,7 @@ import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/namespace";
 import { fetchData, fetchMarkerObjectUrl, parseStaticLocations } from "./Utils/Data";
 import { validLocation, validateLocationProps } from "./Utils/Validations";
-import LeafletMapsContainerProps = Container.LeafletMapsContainerProps;
+import MapsContainerProps = Container.MapsContainerProps;
 import MapProps = Container.MapProps;
 import Location = Container.Location;
 
@@ -25,7 +25,7 @@ export interface LeafletMapsContainerState {
     isFetchingData?: boolean;
 }
 
-export default class LeafletMapsContainer extends Component<LeafletMapsContainerProps, LeafletMapsContainerState> {
+export default class MapsContainer extends Component<MapsContainerProps, LeafletMapsContainerState> {
     private subscriptionHandles: number[] = [];
     private locationsArray: Location[] = [];
     private errorMessage: string[] = [];
@@ -38,7 +38,11 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
 
     render() {
         if (this.props.mapProvider === "googleMaps") {
-            return createElement(GoogleMap, { ...this.props as MapProps });
+            return createElement(GoogleMap, {
+                allLocations: this.state.locations,
+                fetchingData: this.state.isFetchingData,
+                ...this.props as MapProps
+            });
         } else {
             return createElement(LeafletMap, {
                 allLocations: this.state.locations,
@@ -52,7 +56,7 @@ export default class LeafletMapsContainer extends Component<LeafletMapsContainer
         }
     }
 
-    componentWillReceiveProps(nextProps: LeafletMapsContainerProps) {
+    componentWillReceiveProps(nextProps: MapsContainerProps) {
         this.resetSubscriptions(nextProps.mxObject);
         const validationMessage = validateLocationProps(nextProps);
         if (nextProps && nextProps.mxObject) {

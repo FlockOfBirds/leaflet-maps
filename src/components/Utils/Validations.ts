@@ -1,6 +1,6 @@
 import { Container } from "./namespace";
 
-export const validateLocationProps = <T extends Partial<Container.LeafletMapsContainerProps>> (locationData: T): string => {
+export const validateLocationProps = <T extends Partial<Container.MapsContainerProps>> (locationData: T): string => {
     const { locations, zoomLevel, autoZoom, mapBoxAccessToken, mapProvider } = locationData;
     const errorMessage: string[] = [];
     if (!autoZoom && (zoomLevel && zoomLevel < 2)) {
