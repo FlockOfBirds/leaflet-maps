@@ -20,21 +20,29 @@ const googleApiWrapper = (script: string) => <P extends GoogleMapsProps>(wrapped
         }
 
         componentDidMount() {
-            this.loadScript(script);
+            this.scriptLoaded(script);
         }
 
-        private loadScript = (googleScript: string) => {
-            if (!document.querySelectorAll(`[src="${googleScript + this.props.googleMapsToken}"]`).length) {
-                document.body.appendChild(Object.assign(
-                    document.createElement("script"), {
-                        type: "text/javascript",
-                        src: googleScript + this.props.googleMapsToken,
-                        onload: () => this.setState({ scriptsLoaded: true }),
-                        onerror: () => this.setState({ alertMessage: "Could not load. Please check your internet connection" })
-                    }));
-            } else {
-                this.setState({ scriptsLoaded : true });
-            }
+        private loadScript = (googleScript: string): Promise<HTMLElement> =>
+            new Promise((resolve, reject) => {
+                const scriptElement = document.createElement("script");
+                scriptElement.async = true;
+                scriptElement.type = "text/javascript";
+                scriptElement.src = googleScript + this.props.apiToken;
+                scriptElement.onerror = (err) => reject(`Failed due to ${err.message}`);
+                scriptElement.onload = () => resolve();
+                const scriptExists = document.querySelectorAll(`[src="${googleScript + this.props.apiToken}"]`).length;
+                if (!scriptExists) {
+                    document.body.appendChild(scriptElement);
+                } else {
+                    this.setState({ scriptsLoaded: true });
+                }
+            })
+
+        private scriptLoaded = (googleScript: string) => {
+            this.loadScript(googleScript)
+                .then(() => this.setState({ scriptsLoaded: true }))
+                .catch(error => this.setState({ alertMessage: `Failed due to ${error.message}` }));
         }
 
     }
