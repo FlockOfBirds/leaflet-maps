@@ -1,12 +1,12 @@
 import { Container } from "./namespace";
 
 export const validateLocationProps = <T extends Partial<Container.MapsContainerProps>> (locationData: T): string => {
-    const { locations, zoomLevel, autoZoom, mapBoxAccessToken, mapProvider } = locationData;
+    const { locations, zoomLevel, autoZoom, apiToken, mapProvider } = locationData;
     const errorMessage: string[] = [];
     if (!autoZoom && (zoomLevel && zoomLevel < 2)) {
         errorMessage.push("Zoom Level should be greater than one");
     }
-    if (mapProvider === "mapBox" && !mapBoxAccessToken) {
+    if (mapProvider === "mapBox" && !apiToken) {
         errorMessage.push(`A Mapbox token is reaquired`);
     }
     if (locations && locations.length) {

@@ -69,8 +69,7 @@ export namespace Container {
 
     export interface MapProps extends MapControlOptions, DefaultLocations, MapUtils.Dimensions {
         mapProvider?: mapProviders;
-        mapBoxAccessToken?: string;
-        googleMapsToken?: string;
+        apiToken?: string;
     }
 }
 

@@ -61,7 +61,7 @@ export function getVisibleProperties(valueMap: MapsContainerProps, visibilityMap
                     visibilityMap.locations[index].longitudeAttribute = false;
                 }
             }
-            visibilityMap.mapBoxAccessToken = valueMap.mapProvider === "mapBox";
+            visibilityMap.apiToken = valueMap.mapProvider === "mapBox";
             visibilityMap.locations[index].staticMarkerIcon = location.markerImage === "staticImage";
             visibilityMap.locations[index].onClickMicroflow = location.onClickEvent === "callMicroflow";
             visibilityMap.locations[index].onClickNanoflow = location.onClickEvent === "callNanoflow";

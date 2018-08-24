@@ -130,13 +130,8 @@
                 <enumerationValue key="googleMaps">Google Maps</enumerationValue>
             </enumerationValues>
         </property>
-        <property key="mapBoxAccessToken" type="string" required="false">
-            <caption>Mapbox Token</caption>
-            <category>Data source</category>
-            <description/>
-        </property>
-        <property key="googleMapsToken" type="string" required="false">
-            <caption>Google Maps Token</caption>
+        <property key="apiToken" type="string" required="false">
+            <caption>Map Token</caption>
             <category>Data source</category>
             <description/>
         </property>

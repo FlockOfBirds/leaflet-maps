@@ -90,7 +90,7 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
 
     private setTileLayer = () => {
         const urlTemplate = this.props.mapProvider === "mapBox"
-            ? customUrls.mapbox + this.props.mapBoxAccessToken : customUrls.openStreetMap;
+            ? customUrls.mapbox + this.props.apiToken : customUrls.openStreetMap;
         const mapAttribution = this.props.mapProvider === "mapBox" ? mapAttr.mapboxAttr : mapAttr.openStreetMapAttr;
 
         return tileLayer(urlTemplate, {

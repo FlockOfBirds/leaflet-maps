@@ -25,7 +25,6 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
     private bounds!: google.maps.LatLngBounds;
 
     private googleMapsNode?: HTMLDivElement;
-    URL = `https://maps.googleapis.com/maps/api/js?key=${this.props.googleMapsToken}`;
     readonly state: GoogleMapState = { center: this.defaultCenterLocation };
 
     render() {
