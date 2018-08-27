@@ -53,7 +53,7 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
     }
 
     componentDidMount() {
-        if (this.props.scriptsLoaded) {
+        if (typeof google !== "undefined") {
             this.initMap(this.props);
         }
     }
@@ -86,7 +86,7 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
                 this.setState({
                     center: {
                         lat: Number(defaultCenterLatitude),
-                        lng: Number(props.defaultCenterLongitude)
+                        lng: Number(defaultCenterLongitude)
                     }
                 });
             } else if (!fetchingData) {

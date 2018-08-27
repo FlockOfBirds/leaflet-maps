@@ -67,11 +67,13 @@ export const fetchMarkerObjectUrl = (options: Data.FetchMarkerIcons, mxObject?: 
         }
     });
 
-export const parseStaticLocations = (staticlocations: Container.DataSourceLocationProps): Container.Location => ({
-    latitude: staticlocations.staticLatitude.trim() !== "" ? Number(staticlocations.staticLatitude) : undefined,
-    longitude: staticlocations.staticLongitude.trim() !== "" ? Number(staticlocations.staticLongitude) : undefined,
-    url: getStaticMarkerUrl(staticlocations.staticMarkerIcon)
-});
+export const parseStaticLocations = (staticlocations: Container.DataSourceLocationProps[]): Container.Location[] => {
+    return staticlocations.map(staticLocs => ({
+        latitude: staticLocs.staticLatitude.trim() !== "" ? Number(staticLocs.staticLatitude) : undefined,
+        longitude: staticLocs.staticLongitude.trim() !== "" ? Number(staticLocs.staticLongitude) : undefined,
+        url: getStaticMarkerUrl(staticLocs.staticMarkerIcon)
+    }));
+};
 
 export const getStaticMarkerUrl = (staticMarkerIcon: string): string =>
     staticMarkerIcon

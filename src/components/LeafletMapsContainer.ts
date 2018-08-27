@@ -4,10 +4,11 @@ import { LeafletEvent } from "leaflet";
 import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/namespace";
 import { fetchData, fetchMarkerObjectUrl, parseStaticLocations } from "./Utils/Data";
-import { validLocation, validateLocationProps } from "./Utils/Validations";
+import { validateLocationProps } from "./Utils/Validations";
 import MapsContainerProps = Container.MapsContainerProps;
 import MapProps = Container.MapProps;
 import Location = Container.Location;
+import DataSourceLocationProps = Container.DataSourceLocationProps;
 
 import "leaflet/dist/leaflet.css";
 // Re-uses images from ~leaflet package
@@ -21,18 +22,14 @@ import { wrappedGoogleMap } from "./GoogleMap";
 export interface LeafletMapsContainerState {
     alertMessage?: string;
     locations: Location[];
-    markerImageUrl: string;
     isFetchingData?: boolean;
 }
 
 export default class MapsContainer extends Component<MapsContainerProps, LeafletMapsContainerState> {
     private subscriptionHandles: number[] = [];
-    private locationsArray: Location[] = [];
-    private errorMessage: string[] = [];
     readonly state: LeafletMapsContainerState = {
         alertMessage: "",
         locations: [],
-        markerImageUrl: "",
         isFetchingData: false
     };
 
@@ -74,12 +71,10 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
     }
 
     componentWillUnmount() {
-        this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
+        this.unsubscribeAll();
     }
 
     private resetSubscriptions(contextObject?: mendix.lib.MxObject) {
-        this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
-        this.subscriptionHandles = [];
         if (this.props.locations && this.props.locations.length) {
             if (contextObject) {
                 this.subscriptionHandles.push(window.mx.data.subscribe({
@@ -91,69 +86,76 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
                         entity: location.locationsEntity as string,
                         callback: () => this.fetchData(contextObject)
                     }));
-                });
-                this.props.locations.forEach(location =>
                     [
                         location.latitudeAttribute,
                         location.longitudeAttribute,
                         location.staticMarkerIcon
                     ]
-                .forEach(
-                    (attr): number => this.subscriptionHandles.push(window.mx.data.subscribe({
-                        attr,
-                        callback: () => this.fetchData(contextObject),
-                        guid: contextObject.getGuid()
-                    }))
-                ));
+                    .forEach(
+                        (attr): number => this.subscriptionHandles.push(window.mx.data.subscribe({
+                            attr,
+                            callback: () => this.fetchData(contextObject),
+                            guid: contextObject.getGuid()
+                        }))
+                    );
+                });
             }
         }
+    }
+
+    private unsubscribeAll() {
+        this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
+        this.subscriptionHandles = [];
     }
 
     private fetchData = (contextObject?: mendix.lib.MxObject) => {
-        this.locationsArray = [];
-        this.errorMessage = [];
-        const guid = contextObject ? contextObject.getGuid() : "";
         this.setState({ isFetchingData: true });
-        this.props.locations.forEach(location => {
-            if (location.dataSourceType === "static") {
-                const staticLocation = parseStaticLocations(location);
-                this.validateLocation(staticLocation);
+        Promise.all(this.props.locations.map(locationAttr =>
+            this.retrieveData(locationAttr, contextObject)
+        ))
+        .then(locations => {
+            locations.forEach(locs => {
                 this.setState({
-                    locations: this.locationsArray,
-                    alertMessage: this.errorMessage.join(", "),
+                    locations: locs,
                     isFetchingData: false
                 });
-            } else if (location.dataSourceType === "context" && contextObject) {
-                this.setLocationsFromMxObjects([ contextObject ], location);
-            } else {
-                fetchData({
-                    guid,
-                    type: location.dataSourceType,
-                    entity: location.locationsEntity,
-                    constraint: location.entityConstraint,
-                    microflow: location.dataSourceMicroflow
-                })
-                    .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, location))
-                    .catch(reason =>
-                        this.setState({
-                            alertMessage: `Failed because of ${reason}`,
-                            locations: [],
-                            isFetchingData: false
-                        })
-                    );
-            }
+            });
+        })
+        .catch(reason => {
+            this.setState({
+                alertMessage: `Failed due to ${reason}`,
+                isFetchingData: false
+            });
         });
     }
 
-    private validateLocation(location: Location) {
-        if (!validLocation(location)) {
-            this.errorMessage.push(`Invalid Locations were passed`);
-        } else {
-            this.locationsArray.push(location);
-        }
-    }
+    private retrieveData = (locationOptions: DataSourceLocationProps, contextObject?: mendix.lib.MxObject): Promise<Location[]> =>
+        new Promise((resolve, reject) => {
+            if (contextObject) {
+                const guid = contextObject.getGuid();
+                if (locationOptions.dataSourceType === "static") {
+                    const staticLocation = parseStaticLocations([ locationOptions ]);
+                    resolve(staticLocation);
+                } else if (locationOptions.dataSourceType === "context") {
+                    this.setLocationsFromMxObjects([ contextObject ], locationOptions)
+                        .then(locations => resolve(locations));
+                } else {
+                    fetchData({
+                        guid,
+                        type: locationOptions.dataSourceType,
+                        entity: locationOptions.locationsEntity,
+                        constraint: locationOptions.entityConstraint,
+                        microflow: locationOptions.dataSourceMicroflow
+                    })
+                    .then(mxObjects => this.setLocationsFromMxObjects(mxObjects, locationOptions))
+                    .then(locations => resolve(locations));
+                }
+            } else {
+                reject("Context Object required");
+            }
+        })
 
-    private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[], locationAttr: Container.DataSourceLocationProps) =>
+    private setLocationsFromMxObjects = (mxObjects: mendix.lib.MxObject[], locationAttr: DataSourceLocationProps) =>
         Promise.all(mxObjects.map(mxObject =>
             fetchMarkerObjectUrl({ type: locationAttr.markerImage, markerIcon: locationAttr.staticMarkerIcon }, mxObject)
                 .then(markerUrl => {
@@ -163,27 +165,12 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
                         mxObject,
                         url: markerUrl
                     };
-                })))
-            .then(locations => {
-                locations.forEach(location => {
-                    this.validateLocation(location);
-                });
-                this.setState({
-                    locations: this.locationsArray,
-                    isFetchingData: false,
-                    alertMessage: this.errorMessage.join(", ")
-                });
-            })
-            .catch(reason =>
-                this.setState({
-                    alertMessage: `Failed due to, ${reason}`,
-                    locations: [],
-                    isFetchingData: false
                 })
-            )
+            ))
+
     private onClickMarker = (event: LeafletEvent) => {
         const { locations } = this.state;
-        if (locations) {
+        if (locations && locations.length) {
             this.executeAction(locations[ locations.findIndex(targetLoc => targetLoc.latitude === event.target.getLatLng().lat) ]);
         }
     }
