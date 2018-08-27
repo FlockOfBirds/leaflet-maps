@@ -4,7 +4,7 @@ export namespace Container {
     export type DataSource = "static" | "XPath" | "microflow" | "context";
     export type OnClickOptions = "doNothing" | "showPage" | "callMicroflow" | "callNanoflow";
     export type PageLocation = "content" | "popup" | "modal";
-    export type mapProviders = "openStreet" | "mapBox" | "googleMaps";
+    export type mapProviders = "openStreet" | "mapBox" | "hereMaps" | "googleMaps";
 
     export interface WrapperProps {
         "class"?: string;
@@ -71,6 +71,7 @@ export namespace Container {
     export interface MapProps extends MapControlOptions, DefaultLocations, MapUtils.Dimensions {
         mapProvider?: mapProviders;
         apiToken?: string;
+        hereMapsAppId?: string;
     }
 }
 
@@ -126,21 +127,25 @@ export namespace MapUtils {
     export interface CustomTypeUrls {
         readonly openStreetMap: string;
         readonly mapbox: string;
+        readonly hereMaps: string;
     }
 
     export interface MapAttributions {
         readonly openStreetMapAttr: string;
         readonly mapboxAttr: string;
+        readonly hereMapsAttr: string;
     }
 
     export const customUrls: CustomTypeUrls = {
         openStreetMap: `http://{s}.tile.osm.org/{z}/{x}/{y}.png`,
-        mapbox: `https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=`
+        mapbox: `https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=`,
+        hereMaps: `https://2.base.maps.cit.api.here.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?`
     };
 
     export const mapAttr: MapAttributions = {
         openStreetMapAttr: `&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors`,
         mapboxAttr: `Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,
-            <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>`
+            <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>`,
+        hereMapsAttr: `Map &copy; 1987-2014 <a href="http://developer.here.com">HERE</a>`
     };
 }

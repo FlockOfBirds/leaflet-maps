@@ -127,11 +127,17 @@
             <enumerationValues>
                 <enumerationValue key="openStreet">Open street</enumerationValue>
                 <enumerationValue key="mapBox">Map box</enumerationValue>
+                <enumerationValue key="hereMaps">Here Maps</enumerationValue>
                 <enumerationValue key="googleMaps">Google Maps</enumerationValue>
             </enumerationValues>
         </property>
         <property key="apiToken" type="string" required="false">
-            <caption>Map Token</caption>
+            <caption>Map token</caption>
+            <category>Data source</category>
+            <description>Add token for either map box, here maps(app code) and google maps</description>
+        </property>
+        <property key="hereMapsAppId" type="string" required="false">
+            <caption>Here maps App id</caption>
             <category>Data source</category>
             <description/>
         </property>
