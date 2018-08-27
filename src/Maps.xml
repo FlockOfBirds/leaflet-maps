@@ -9,12 +9,12 @@
         <!-- Data source -->
         <property key="locations" type="object" isList="true" required="false">
             <caption>Locations</caption>
-            <category>Data source</category>
+            <category>Location properties</category>
             <description/>
             <properties>
                 <property key="dataSourceType" type="enumeration" defaultValue="context">
                     <caption>Data source</caption>
-                    <category>Database / Microflow</category>
+                    <category>Data source</category>
                     <description/>
                     <enumerationValues>
                         <enumerationValue key="context">Context</enumerationValue>
@@ -25,12 +25,12 @@
                 </property>
                 <property key="locationsEntity" type="entity" required="false">
                     <caption>Locations entity</caption>
-                    <category>Database / Microflow</category>
+                    <category>Data source</category>
                     <description/>
                 </property>
                 <property key="latitudeAttribute" type="attribute" entityProperty="locationsEntity" required="false">
                     <caption>Latitude attribute</caption>
-                    <category>Database / Microflow</category>
+                    <category>Data source</category>
                     <description/>
                     <attributeTypes>
                         <attributeType name="Decimal"/>
@@ -38,7 +38,7 @@
                 </property>
                 <property key="longitudeAttribute" type="attribute" entityProperty="locationsEntity" required="false">
                     <caption>Longitude attribute  </caption>
-                    <category>Database / Microflow</category>
+                    <category>Data source</category>
                     <description/>
                     <attributeTypes>
                         <attributeType name="Decimal"/>
@@ -46,12 +46,12 @@
                 </property>
                 <property key="entityConstraint" type="entityConstraint" entityProperty="locationsEntity" required="false">
                     <caption>XPath constraint</caption>
-                    <category>Database / Microflow</category>
+                    <category>Data source</category>
                     <description>Constraint the 'Data source' 'Database' locations. It could be used with relation to '[%CurrentObject%]'</description>
                 </property>
                 <property key="dataSourceMicroflow" type="microflow" required="false">
                     <caption>Microflow</caption>
-                    <category>Database / Microflow</category>
+                    <category>Data source</category>
                     <description>The 'Datasource' 'Microflow' that returns the list of locations</description>
                     <returnType type="Object" entityProperty="locationsEntity" isList="true"/>
                 </property>
@@ -122,7 +122,7 @@
         </property>
         <property key="mapProvider" type="enumeration" defaultValue="openStreet">
             <caption>Map Provider</caption>
-            <category>Data source</category>
+            <category>Location properties</category>
             <description/>
             <enumerationValues>
                 <enumerationValue key="openStreet">Open street</enumerationValue>
@@ -133,22 +133,22 @@
         </property>
         <property key="apiToken" type="string" required="false">
             <caption>Map token</caption>
-            <category>Data source</category>
+            <category>Location properties</category>
             <description>Add token for either map box, here maps(app code) and google maps</description>
         </property>
         <property key="hereMapsAppId" type="string" required="false">
             <caption>Here maps App id</caption>
-            <category>Data source</category>
+            <category>Location properties</category>
             <description/>
         </property>
         <property key="defaultCenterLatitude" type="string" required="false">
             <caption>Default center latitude</caption>
-            <category>Data source</category>
+            <category>Location properties</category>
             <description/>
         </property>
         <property key="defaultCenterLongitude" type="string" required="false">
             <caption>Default center longitude</caption>
-            <category>Data source</category>
+            <category>Location properties</category>
             <description/>
         </property>
         <!-- Appearance -->
