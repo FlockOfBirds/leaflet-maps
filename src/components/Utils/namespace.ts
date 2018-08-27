@@ -65,6 +65,7 @@ export namespace Container {
         optionScroll?: boolean;
         optionZoomControl?: boolean;
         attributionControl?: boolean;
+        optionStreetView?: boolean;
     }
 
     export interface MapProps extends MapControlOptions, DefaultLocations, MapUtils.Dimensions {

@@ -59,7 +59,7 @@ module.exports = function(grunt) {
                     {
                         dest: "./dist/MxTestProject/widgets",
                         cwd: `./dist/${pkg.version}/`,
-                        src: [ "*.mpk" ],
+                        src: [ packageName + ".mpk" ],
                         expand: true
                     }
                 ]

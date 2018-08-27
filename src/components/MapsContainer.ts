@@ -16,7 +16,7 @@ import "leaflet/dist/leaflet.css";
 // https://github.com/ghybs/leaflet-defaulticon-compatibility#readme
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
-import "./ui/LeafletMaps.css";
+import "./ui/Maps.css";
 import { wrappedGoogleMap } from "./GoogleMap";
 
 export interface LeafletMapsContainerState {

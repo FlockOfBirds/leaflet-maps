@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget id="com.mendix.widget.custom.leafletmaps.LeafletMaps" needsEntityContext="true" offlineCapable="true"
+<widget id="com.mendix.widget.custom.maps.Maps" needsEntityContext="true" offlineCapable="true"
     xmlns="http://www.mendix.com/widget/1.0/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../xsd/widget.xsd">
     <name>Maps</name>
@@ -205,6 +205,11 @@
             <caption>Attribution control</caption>
             <category>Controls</category>
             <description>Add attributions to the map (credits)</description>
+        </property>
+        <property key="optionStreetView" type="boolean" defaultValue="true">
+            <caption>Street view</caption>
+            <category>Controls</category>
+            <description>Show the Street View Pegman control for google maps</description>
         </property>
     </properties>
 </widget>

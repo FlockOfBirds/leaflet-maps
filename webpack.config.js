@@ -7,7 +7,7 @@ const name = widgetName.toLowerCase();
 
 const widgetConfig = {
     entry: {
-        LeafletMaps: `./src/components/${widgetName}Container.ts`
+        Maps: `./src/components/${widgetName}Container.ts`
     },
     output: {
         path: path.resolve(__dirname, "dist/tmp"),

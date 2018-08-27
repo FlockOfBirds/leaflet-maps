@@ -37,7 +37,7 @@ export function getPreviewCss() {
         require("leaflet/dist/leaflet.css") +
         require("leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css") +
         require("leaflet-defaulticon-compatibility") +
-        require("./components/ui/LeafletMaps.css")
+        require("./components/ui/Maps.css")
     );
 }
 
