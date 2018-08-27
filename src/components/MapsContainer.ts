@@ -2,6 +2,7 @@ import { Component, createElement } from "react";
 import { LeafletEvent } from "leaflet";
 
 import { LeafletMap } from "./LeafletMap";
+import { wrappedGoogleMap } from "./GoogleMap";
 import { Container } from "./Utils/namespace";
 import { fetchData, fetchMarkerObjectUrl, parseStaticLocations } from "./Utils/Data";
 import { validLocations, validateLocationProps } from "./Utils/Validations";
@@ -17,17 +18,16 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css";
 import "./ui/Maps.css";
-import { wrappedGoogleMap } from "./GoogleMap";
 
-export interface LeafletMapsContainerState {
+export interface MapsContainerState {
     alertMessage?: string;
     locations: Location[];
     isFetchingData?: boolean;
 }
 
-export default class MapsContainer extends Component<MapsContainerProps, LeafletMapsContainerState> {
+export default class MapsContainer extends Component<MapsContainerProps, MapsContainerState> {
     private subscriptionHandles: number[] = [];
-    readonly state: LeafletMapsContainerState = {
+    readonly state: MapsContainerState = {
         alertMessage: "",
         locations: [],
         isFetchingData: false
@@ -39,7 +39,7 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
             fetchingData: this.state.isFetchingData,
             className: this.props.class,
             alertMessage: this.state.alertMessage,
-            style: this.parseStyle(this.props.style),
+            style: parseStyle(this.props.style),
             ...this.props as MapProps
         };
 
@@ -216,8 +216,9 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
             }
         });
     }
+}
 
-    private parseStyle = (style = ""): {[key: string]: string} => { // Doesn't support a few stuff.
+export const parseStyle = (style = ""): {[key: string]: string} => { // Doesn't support a few stuff.
         try {
             return style.split(";").reduce<{[key: string]: string}>((styleObject, line) => {
                 const pair = line.split(":");
@@ -234,5 +235,4 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
         }
 
         return {};
-    }
-}
+    };

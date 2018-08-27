@@ -1,7 +1,9 @@
 import { Component, createElement } from "react";
 import { LeafletMap } from "./components/LeafletMap";
+import { wrappedGoogleMap } from "./components/GoogleMap";
 import { validateLocationProps } from "./components/Utils/Validations";
 import { Container } from "./components/Utils/namespace";
+import { parseStyle } from "./components/MapsContainer";
 import MapsContainerProps = Container.MapsContainerProps;
 import MapProps = Container.MapProps;
 
@@ -14,12 +16,22 @@ export class preview extends Component<MapsContainerProps, {}> {
 
     render() {
         const validationMessage = validateLocationProps(this.props);
-
-        return createElement(LeafletMap, {
+        const commonProps = {
             allLocations: preview.createSampleLocations(),
             alertMessage: validationMessage,
             fetchingData: false,
+            style: parseStyle(this.props.style),
             ...this.props as MapProps
+        };
+
+        if (this.props.mapProvider === "googleMaps") {
+            return createElement(wrappedGoogleMap, {
+                ...commonProps
+            });
+        }
+
+        return createElement(LeafletMap, {
+            ...commonProps
         });
     }
 
@@ -61,7 +73,7 @@ export function getVisibleProperties(valueMap: MapsContainerProps, visibilityMap
                     visibilityMap.locations[index].longitudeAttribute = false;
                 }
             }
-            visibilityMap.apiToken = valueMap.mapProvider === "mapBox";
+            visibilityMap.apiToken = valueMap.mapProvider === "mapBox" || valueMap.mapProvider === "googleMaps";
             visibilityMap.locations[index].staticMarkerIcon = location.markerImage === "staticImage";
             visibilityMap.locations[index].onClickMicroflow = location.onClickEvent === "callMicroflow";
             visibilityMap.locations[index].onClickNanoflow = location.onClickEvent === "callNanoflow";
