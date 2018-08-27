@@ -72,6 +72,10 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
         if (this.googleMapsNode) {
             this.map = new google.maps.Map(this.googleMapsNode, {
                 zoom: this.props.zoomLevel,
+                zoomControl: this.props.optionZoomControl,
+                scrollwheel: this.props.optionScroll,
+                draggable: this.props.optionDrag,
+                streetViewControl: this.props.optionStreetView,
                 minZoom: 2,
                 maxZoom: 20
             });
