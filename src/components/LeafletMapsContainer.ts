@@ -4,7 +4,7 @@ import { LeafletEvent } from "leaflet";
 import { LeafletMap } from "./LeafletMap";
 import { Container } from "./Utils/namespace";
 import { fetchData, fetchMarkerObjectUrl, parseStaticLocations } from "./Utils/Data";
-import { validateLocationProps } from "./Utils/Validations";
+import { validLocations, validateLocationProps } from "./Utils/Validations";
 import MapsContainerProps = Container.MapsContainerProps;
 import MapProps = Container.MapProps;
 import Location = Container.Location;
@@ -34,24 +34,23 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
     };
 
     render() {
+        const commonProps = {
+            allLocations: this.state.locations,
+            fetchingData: this.state.isFetchingData,
+            className: this.props.class,
+            alertMessage: this.state.alertMessage,
+            style: this.parseStyle(this.props.style),
+            ...this.props as MapProps
+        };
+
         if (this.props.mapProvider === "googleMaps") {
             return createElement(wrappedGoogleMap, {
-                allLocations: this.state.locations,
-                fetchingData: this.state.isFetchingData,
-                className: this.props.class,
-                alertMessage: this.state.alertMessage,
-                style: this.parseStyle(this.props.style),
-                ...this.props as MapProps
+                ...commonProps
             });
         } else {
             return createElement(LeafletMap, {
-                allLocations: this.state.locations,
-                className: this.props.class,
-                alertMessage: this.state.alertMessage,
                 onClickMarker: this.onClickMarker,
-                fetchingData: this.state.isFetchingData,
-                style: this.parseStyle(this.props.style),
-                ...this.props as MapProps
+                ...commonProps
             });
         }
     }
@@ -116,15 +115,21 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
         ))
         .then(locations => {
             locations.forEach(locs => {
-                this.setState({
-                    locations: locs,
-                    isFetchingData: false
-                });
+                if (validLocations(locs)) {
+                    this.setState({
+                        locations: locs,
+                        isFetchingData: false,
+                        alertMessage: ""
+                    });
+                } else {
+                    throw new Error("Invalid Coordinates passed");
+                }
             });
         })
         .catch(reason => {
             this.setState({
-                alertMessage: `Failed due to ${reason}`,
+                locations: [],
+                alertMessage: `Failed due to ${reason.message}`,
                 isFetchingData: false
             });
         });

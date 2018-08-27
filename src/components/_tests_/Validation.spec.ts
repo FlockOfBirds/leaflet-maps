@@ -1,7 +1,7 @@
 import { random } from "faker";
 
 import { Container } from "../Utils/namespace";
-import { validLocation, validateLocationProps } from "../Utils/Validations";
+import { validLocations, validateLocationProps } from "../Utils/Validations";
 import locationDataProps = Container.DataSourceLocationProps;
 
 describe("utils/Data", () => {
@@ -82,8 +82,8 @@ describe("utils/Data", () => {
 
     describe("#ValidLocation", () => {
         it("returns false if location is not valid", () => {
-            const location = { latitude: 0, longitude: 0 };
-            const checkValidLocation = validLocation(location);
+            const location = [ { latitude: 0, longitude: 0 } ];
+            const checkValidLocation = validLocations(location);
 
             expect(checkValidLocation).toEqual(false);
         });

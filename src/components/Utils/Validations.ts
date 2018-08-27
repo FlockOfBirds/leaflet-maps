@@ -32,11 +32,13 @@ export const validateLocationProps = <T extends Partial<Container.MapsContainerP
     return errorMessage.join(", ");
 };
 
-export const validLocation = (location: Container.Location): boolean => {
-    const { latitude: lat, longitude: lng } = location;
+export const validLocations = (location: Container.Location[]): boolean => {
+    return location.every(loca => {
+        const { latitude: lat, longitude: lng } = loca;
 
-    return typeof lat === "number" && typeof lng === "number"
+        return typeof lat === "number" && typeof lng === "number"
         && lat <= 90 && lat >= -90
         && lng <= 180 && lng >= -180
         && !(lat === 0 && lng === 0);
+    });
 };

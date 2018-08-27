@@ -31,8 +31,9 @@ const googleApiWrapper = (script: string) => <P extends GoogleMapsProps>(wrapped
                 scriptElement.src = googleScript + this.props.apiToken;
                 scriptElement.onerror = (err) => reject(`Failed due to ${err.message}`);
                 scriptElement.onload = () => resolve();
-                const scriptExists = document.querySelectorAll(`[src="${googleScript + this.props.apiToken}"]`).length;
-                if (!scriptExists) {
+                const scriptExists = document.querySelectorAll(`[src="${googleScript}"]`).length;
+                const tokenScriptExists = document.querySelectorAll(`[src="${googleScript + this.props.apiToken}"]`).length;
+                if (!(scriptExists || tokenScriptExists)) {
                     document.body.appendChild(scriptElement);
                 } else {
                     this.setState({ scriptsLoaded: true });
