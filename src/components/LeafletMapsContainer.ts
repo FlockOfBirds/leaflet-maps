@@ -75,6 +75,7 @@ export default class MapsContainer extends Component<MapsContainerProps, Leaflet
     }
 
     private resetSubscriptions(contextObject?: mendix.lib.MxObject) {
+        this.unsubscribeAll();
         if (this.props.locations && this.props.locations.length) {
             if (contextObject) {
                 this.subscriptionHandles.push(window.mx.data.subscribe({
