@@ -2,7 +2,7 @@ import { Component, createElement } from "react";
 import { LeafletEvent } from "leaflet";
 
 import { LeafletMap } from "./LeafletMap";
-import { wrappedGoogleMap } from "./GoogleMap";
+import googleApiWrapper from "./GoogleMap";
 import { Container } from "./Utils/namespace";
 import { fetchData, fetchMarkerObjectUrl, parseStaticLocations } from "./Utils/Data";
 import { validLocations, validateLocationProps } from "./Utils/Validations";
@@ -40,16 +40,16 @@ export default class MapsContainer extends Component<MapsContainerProps, MapsCon
             className: this.props.class,
             alertMessage: this.state.alertMessage,
             style: parseStyle(this.props.style),
+            onClickMarker: this.onClickMarker,
             ...this.props as MapProps
         };
 
         if (this.props.mapProvider === "googleMaps") {
-            return createElement(wrappedGoogleMap, {
+            return createElement(googleApiWrapper, {
                 ...commonProps
             });
         } else {
             return createElement(LeafletMap, {
-                onClickMarker: this.onClickMarker,
                 ...commonProps
             });
         }
@@ -174,7 +174,7 @@ export default class MapsContainer extends Component<MapsContainerProps, MapsCon
                 })
             ))
 
-    private onClickMarker = (event: LeafletEvent) => {
+    private onClickMarker = (event: LeafletEvent | Event) => {
         const { locations } = this.state;
         if (locations && locations.length) {
             this.executeAction(locations[ locations.findIndex(targetLoc => targetLoc.latitude === event.target.getLatLng().lat) ]);

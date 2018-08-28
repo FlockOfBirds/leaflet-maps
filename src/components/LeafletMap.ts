@@ -144,11 +144,11 @@ export class LeafletMap extends Component<LeafletMapProps, LeafletMapState> {
             if (this.map) {
                 try {
                     this.map.fitBounds(this.markerGroup.getBounds(), { animate: false }).invalidateSize();
+                    if (!this.props.autoZoom) {
+                        this.map.setZoom(this.props.zoomLevel, { animate: false });
+                    }
                 } catch (error) {
                     this.setState({ alertMessage: `Failed due to ${error.message}` });
-                }
-                if (!this.props.autoZoom) {
-                    this.map.setZoom(this.props.zoomLevel, { animate: false });
                 }
             }
         }, 0);

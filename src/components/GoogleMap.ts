@@ -9,7 +9,7 @@ import MapProps = Container.MapProps;
 import Location = Container.Location;
 import SharedProps = MapUtils.SharedProps;
 
-export type GoogleMapsProps = { scriptsLoaded?: boolean } & SharedProps & MapProps;
+export type GoogleMapsProps = { scriptsLoaded?: boolean, onClickMarker?: (event: Event) => void } & SharedProps & MapProps;
 
 export interface GoogleMapState {
     center: google.maps.LatLngLiteral;
@@ -53,7 +53,7 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
     }
 
     componentDidMount() {
-        if (typeof google !== "undefined") {
+        if (this.props.scriptsLoaded) {
             this.initMap(this.props);
         }
     }
@@ -76,6 +76,9 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
                 scrollwheel: this.props.optionScroll,
                 draggable: this.props.optionDrag,
                 streetViewControl: this.props.optionStreetView,
+                mapTypeControl: this.props.mapTypeControl,
+                fullscreenControl: this.props.fullScreenControl,
+                rotateControl: this.props.rotateControl,
                 minZoom: 2,
                 maxZoom: 20
             });
@@ -109,24 +112,33 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
                     position: { lat: Number(location.latitude), lng: Number(location.longitude) },
                     icon: location.url ? location.url : undefined
                 });
+                marker.addListener("click", event => {
+                    if (this.props.onClickMarker) {
+                        this.props.onClickMarker(event);
+                    }
+                });
                 this.markers.push(marker);
             });
             this.setMapOnMarkers(this.map);
-            setTimeout(() => this.setBounds(this.bounds), 0);
+            this.setBounds(this.bounds);
         }
     }
 
     private setBounds = (mapBounds?: google.maps.LatLngBounds) => {
-        if (mapBounds && this.map) {
-            try {
-                this.map.fitBounds(mapBounds);
-                if (!this.props.autoZoom) {
-                    this.map.setZoom(this.props.zoomLevel);
+        setTimeout(() => {
+            if (mapBounds && this.map) {
+                try {
+                    this.map.fitBounds(mapBounds);
+                    window.setTimeout(() => {
+                        if (!this.props.autoZoom) {
+                            this.map.setZoom(this.props.zoomLevel);
+                        }
+                    }, 100);
+                } catch (error) {
+                    this.setState({ alertMessage: `Failed due to ${error.message}` });
                 }
-            } catch (error) {
-                this.setState({ alertMessage: `Failed due to ${error.message}` });
             }
-        }
+        }, 0);
     }
 
     private setMapOnMarkers = (map?: google.maps.Map) => {
@@ -136,5 +148,4 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
     }
 }
 
-export const wrappedGoogleMap = googleApiWrapper(`https://maps.googleapis.com/maps/api/js?key=`)(GoogleMap);
-export default wrappedGoogleMap ;
+export default googleApiWrapper(`https://maps.googleapis.com/maps/api/js?key=`)(GoogleMap);

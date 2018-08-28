@@ -25,19 +25,20 @@ const googleApiWrapper = (script: string) => <P extends GoogleMapsProps>(wrapped
 
         private loadScript = (googleScript: string): Promise<HTMLElement> =>
             new Promise((resolve, reject) => {
+                // TODO Fix script added multiple times.
                 const scriptElement = document.createElement("script");
                 scriptElement.async = true;
+                scriptElement.defer = true;
                 scriptElement.type = "text/javascript";
-                scriptElement.src = googleScript + this.props.apiToken;
+                scriptElement.id = "googleScript";
+                scriptElement.src = googleScript + this.props.apiToken + `&libraries=places`;
                 scriptElement.onerror = (err) => reject(`Failed due to ${err.message}`);
-                scriptElement.onload = () => resolve();
-                const scriptExists = document.querySelectorAll(`[src="${googleScript}"]`).length;
-                const tokenScriptExists = document.querySelectorAll(`[src="${googleScript + this.props.apiToken}"]`).length;
-                if (!(scriptExists || tokenScriptExists)) {
-                    document.body.appendChild(scriptElement);
-                } else {
-                    this.setState({ scriptsLoaded: true });
-                }
+                scriptElement.onload = () => {
+                    if (typeof google === "object" && typeof google.maps === "object") {
+                        resolve();
+                    }
+                };
+                document.body.appendChild(scriptElement);
             })
 
         private scriptLoaded = (googleScript: string) => {

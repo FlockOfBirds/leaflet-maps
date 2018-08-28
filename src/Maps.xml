@@ -214,8 +214,23 @@
         </property>
         <property key="optionStreetView" type="boolean" defaultValue="true">
             <caption>Street view</caption>
-            <category>Controls</category>
+            <category>Google maps controls</category>
             <description>Show the Street View Pegman control for google maps</description>
+        </property>
+        <property key="mapTypeControl" type="boolean" defaultValue="true">
+            <caption>Map type</caption>
+            <category>Google maps controls</category>
+            <description>Show the map types control</description>
+        </property>
+        <property key="fullScreenControl" type="boolean" defaultValue="true">
+            <caption>Full screen</caption>
+            <category>Google maps controls</category>
+            <description>Show the full screen control</description>
+        </property>
+        <property key="rotateControl" type="boolean" defaultValue="true">
+            <caption>Rotate</caption>
+            <category>Google maps controls</category>
+            <description>Show the rotate control</description>
         </property>
     </properties>
 </widget>

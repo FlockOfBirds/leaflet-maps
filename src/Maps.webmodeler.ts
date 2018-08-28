@@ -1,6 +1,6 @@
 import { Component, createElement } from "react";
 import { LeafletMap } from "./components/LeafletMap";
-import { wrappedGoogleMap } from "./components/GoogleMap";
+import googleApiWrapper from "./components/GoogleMap";
 import { validateLocationProps } from "./components/Utils/Validations";
 import { Container } from "./components/Utils/namespace";
 import { parseStyle } from "./components/MapsContainer";
@@ -25,7 +25,7 @@ export class preview extends Component<MapsContainerProps, {}> {
         };
 
         if (this.props.mapProvider === "googleMaps") {
-            return createElement(wrappedGoogleMap, {
+            return createElement(googleApiWrapper, {
                 ...commonProps
             });
         }
