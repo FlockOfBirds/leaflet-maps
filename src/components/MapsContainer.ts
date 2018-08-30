@@ -114,17 +114,16 @@ export default class MapsContainer extends Component<MapsContainerProps, MapsCon
             this.retrieveData(locationAttr, contextObject)
         ))
         .then(locations => {
-            locations.forEach(locs => {
-                if (validLocations(locs)) {
-                    this.setState({
-                        locations: locs,
-                        isFetchingData: false,
-                        alertMessage: ""
-                    });
-                } else {
-                    throw new Error("Invalid Coordinates passed");
-                }
-            });
+            const locs = ([] as Location[]).concat(...locations);
+            if (validLocations(locs)) {
+                this.setState({
+                    locations: locs,
+                    isFetchingData: false,
+                    alertMessage: ""
+                });
+            } else {
+                throw new Error("Invalid Coordinates passed");
+            }
         })
         .catch(reason => {
             this.setState({
