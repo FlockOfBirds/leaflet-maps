@@ -107,12 +107,18 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
         if (mapLocations && mapLocations.length) {
             this.bounds = new google.maps.LatLngBounds();
             mapLocations.forEach(location => {
-                this.bounds.extend({ lat : Number(location.latitude), lng: Number(location.longitude) });
+                this.bounds.extend({
+                    lat: Number(location.latitude),
+                    lng: Number(location.longitude)
+                });
                 const marker = new google.maps.Marker({
-                    position: { lat: Number(location.latitude), lng: Number(location.longitude) },
+                    position: {
+                        lat: Number(location.latitude),
+                        lng: Number(location.longitude)
+                    },
                     icon: location.url ? location.url : undefined
                 });
-                marker.addListener("click", event => {
+                marker.addListener("click", (event: any) => {
                     if (this.props.onClickMarker) {
                         this.props.onClickMarker(event);
                     }

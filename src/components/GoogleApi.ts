@@ -20,31 +20,43 @@ const googleApiWrapper = (script: string) => <P extends GoogleMapsProps>(wrapped
         }
 
         componentDidMount() {
-            this.scriptLoaded(script);
+            if (typeof google === "undefined") {
+                this.loadScript(script);
+            } else {
+                this.setState({ scriptsLoaded: true });
+            }
         }
 
-        private loadScript = (googleScript: string): Promise<HTMLElement> =>
-            new Promise((resolve, reject) => {
-                // TODO Fix script added multiple times.
-                const scriptElement = document.createElement("script");
-                scriptElement.async = true;
-                scriptElement.defer = true;
-                scriptElement.type = "text/javascript";
-                scriptElement.id = "googleScript";
-                scriptElement.src = googleScript + this.props.apiToken + `&libraries=places`;
-                scriptElement.onerror = (err) => reject(`Failed due to ${err.message}`);
-                scriptElement.onload = () => {
-                    if (typeof google === "object" && typeof google.maps === "object") {
-                        resolve();
+        private addScript = (googleScript: string) => {
+            if (!(window as any)["com.mendix.widget.custom.maps.Maps"]) {
+                (window as any)["com.mendix.widget.custom.maps.Maps"] = new Promise((resolve, reject) => {
+                    // TODO: add to the mendx window object.
+                    const refNode = window.document.getElementsByTagName("script")[0];
+                    const scriptElement = document.createElement("script");
+                    scriptElement.async = true;
+                    scriptElement.defer = true;
+                    scriptElement.type = "text/javascript";
+                    scriptElement.id = "googleScript";
+                    scriptElement.src = googleScript + this.props.apiToken + `&libraries=places`;
+                    scriptElement.onerror = (err) => reject(`Failed due to ${err.message}`);
+                    scriptElement.onload = () => {
+                        if (typeof google === "object" && typeof google.maps === "object") {
+                            resolve();
+                        }
+                    };
+                    if (refNode && refNode.parentNode) {
+                        refNode.parentNode.insertBefore(scriptElement, refNode);
                     }
-                };
-                document.body.appendChild(scriptElement);
-            })
+                });
+            }
 
-        private scriptLoaded = (googleScript: string) => {
-            this.loadScript(googleScript)
+            return (window as any)["com.mendix.widget.custom.maps.Maps"];
+        }
+
+        private loadScript = (googleScript: string) => {
+            this.addScript(googleScript)
                 .then(() => this.setState({ scriptsLoaded: true }))
-                .catch(error => this.setState({ alertMessage: `Failed due to ${error.message}` }));
+                .catch((error: string) => this.setState({ alertMessage: `Failed due to ${error}` }));
         }
 
     }
