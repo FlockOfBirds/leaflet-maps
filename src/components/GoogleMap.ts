@@ -79,6 +79,7 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
                 mapTypeControl: this.props.mapTypeControl,
                 fullscreenControl: this.props.fullScreenControl,
                 rotateControl: this.props.rotateControl,
+                styles: this.getMapsStyles(),
                 minZoom: 2,
                 maxZoom: 20
             });
@@ -152,6 +153,23 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
             this.markers.forEach(marker => marker.setMap(map));
         }
     }
+
+    private getMapsStyles(): google.maps.MapTypeStyle[] {
+        if (this.props.mapStyles && this.props.mapStyles.trim()) {
+            try {
+                return JSON.parse(this.props.mapStyles);
+            } catch (error) {
+                this.setState({ alertMessage: `invalid Maps styles, ${error}` });
+            }
+        }
+
+        return [ {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [ { visibility: "off" } ]
+        } ];
+    }
+
 }
 
 export default googleApiWrapper(`https://maps.googleapis.com/maps/api/js?key=`)(GoogleMap);

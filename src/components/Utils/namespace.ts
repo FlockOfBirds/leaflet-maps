@@ -69,6 +69,7 @@ export namespace Container {
         mapTypeControl?: boolean;
         fullScreenControl?: boolean;
         rotateControl?: boolean;
+        mapStyles?: string;
     }
 
     export interface MapProps extends MapControlOptions, DefaultLocations, MapUtils.Dimensions {
