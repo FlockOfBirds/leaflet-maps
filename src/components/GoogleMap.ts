@@ -9,7 +9,10 @@ import MapProps = Container.MapProps;
 import Location = Container.Location;
 import SharedProps = MapUtils.SharedProps;
 
-export type GoogleMapsProps = { scriptsLoaded?: boolean, onClickMarker?: (event: Event) => void } & SharedProps & MapProps;
+export type GoogleMapsProps = {
+    scriptsLoaded?: boolean,
+    onClickMarker?: (event: Event | google.maps.MouseEvent) => void
+} & SharedProps & MapProps;
 
 export interface GoogleMapState {
     center: google.maps.LatLngLiteral;
@@ -136,11 +139,9 @@ class GoogleMap extends Component<GoogleMapsProps, GoogleMapState> {
             if (mapBounds && this.map) {
                 try {
                     this.map.fitBounds(mapBounds);
-                    window.setTimeout(() => {
-                        if (!this.props.autoZoom) {
-                            this.map.setZoom(this.props.zoomLevel);
-                        }
-                    }, 100);
+                    if (!this.props.autoZoom) {
+                        this.map.setZoom(this.props.zoomLevel);
+                    }
                 } catch (error) {
                     this.setState({ alertMessage: `Failed due to ${error.message}` });
                 }

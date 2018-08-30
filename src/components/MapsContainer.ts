@@ -77,12 +77,12 @@ export default class MapsContainer extends Component<MapsContainerProps, MapsCon
         this.unsubscribeAll();
         if (this.props.locations && this.props.locations.length) {
             if (contextObject) {
-                this.subscriptionHandles.push(window.mx.data.subscribe({
+                this.subscriptionHandles.push(mx.data.subscribe({
                     guid: contextObject.getGuid(),
                     callback: () => this.fetchData(contextObject)
                 }));
                 this.props.locations.forEach(location => {
-                    this.subscriptionHandles.push(window.mx.data.subscribe({
+                    this.subscriptionHandles.push(mx.data.subscribe({
                         entity: location.locationsEntity as string,
                         callback: () => this.fetchData(contextObject)
                     }));
@@ -92,7 +92,7 @@ export default class MapsContainer extends Component<MapsContainerProps, MapsCon
                         location.staticMarkerIcon
                     ]
                     .forEach(
-                        (attr): number => this.subscriptionHandles.push(window.mx.data.subscribe({
+                        (attr): number => this.subscriptionHandles.push(mx.data.subscribe({
                             attr,
                             callback: () => this.fetchData(contextObject),
                             guid: contextObject.getGuid()
@@ -104,7 +104,7 @@ export default class MapsContainer extends Component<MapsContainerProps, MapsCon
     }
 
     private unsubscribeAll() {
-        this.subscriptionHandles.forEach(window.mx.data.unsubscribe);
+        this.subscriptionHandles.map(mx.data.unsubscribe);
         this.subscriptionHandles = [];
     }
 
@@ -173,10 +173,14 @@ export default class MapsContainer extends Component<MapsContainerProps, MapsCon
                 })
             ))
 
-    private onClickMarker = (event: LeafletEvent | Event) => {
+    private onClickMarker = (event: LeafletEvent & google.maps.MouseEvent) => {
         const { locations } = this.state;
         if (locations && locations.length) {
-            this.executeAction(locations[ locations.findIndex(targetLoc => targetLoc.latitude === event.target.getLatLng().lat) ]);
+            if (this.props.mapProvider === "googleMaps") {
+                this.executeAction(locations[locations.findIndex(targetLoc => targetLoc.latitude === event.latLng.lat())]);
+            } else {
+                this.executeAction(locations[locations.findIndex(targetLoc => targetLoc.latitude === event.target.getLatLng().lat)]);
+            }
         }
     }
 
